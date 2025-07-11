@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File
 import os
-from app.processor import qwen_extract_fields
+from app.processor import qwen_extract_fields, process_pdf_to_images
 from app.utils import build_prompt_from_doc
 
 router = APIRouter()
@@ -13,9 +13,18 @@ async def extract_fields_from_document(file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(await file.read())
 
-    # Use Qwen to directly process image and extract content
+    if file.filename.lower().endswith(".pdf"):
+        image_paths = process_pdf_to_images(file_path)
+    else:
+        image_paths = [file_path]
+
+    # Use Qwen to directly process image(s)
     doc_text = "Document content is in the image itself."
     prompt = build_prompt_from_doc(doc_text)
 
-    response = qwen_extract_fields(file_path, prompt)
-    return {"filename": file.filename, "extracted_fields": response}
+    all_outputs = []
+    for image_path in image_paths:
+        response = qwen_extract_fields(image_path, prompt)
+        all_outputs.append({"image": os.path.basename(image_path), "fields": response})
+
+    return {"filename": file.filename, "results": all_outputs}
