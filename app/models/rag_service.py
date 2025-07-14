@@ -8,7 +8,7 @@ def index_pdf(path: str):
     RAG.index(
         input_path=path,
         index_name="uploaded_doc",
-        store_collection_with_index=True,
+        store_collection_with_index=False,
         overwrite=True
     )
 
