@@ -11,6 +11,10 @@ def load_model():
     FastVisionModel.for_inference(model)
     return model, tokenizer
 
+from transformers import TextStreamer
+from unsloth import FastVisionModel
+import torch
+
 def run_answer(model, tokenizer, question: str, image):
     prompt = f"""Answer the question based on the following image.
 Don't use markdown.
@@ -20,8 +24,25 @@ Question: {question}"""
 
     messages = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": prompt}]}]
     input_text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
-    inputs = tokenizer(image, input_text, add_special_tokens=False, return_tensors="pt").to("cuda")
 
+    # Tokenize text only
+    text_inputs = tokenizer(
+        input_text,
+        return_tensors="pt",
+        add_special_tokens=False,
+    ).to("cuda")
+
+    # Process image separately
+    vision_inputs = model.process_images([image])  # returns pixel values
+    vision_inputs = vision_inputs.to("cuda")
+
+    # Run generation
     text_streamer = TextStreamer(tokenizer, skip_prompt=True)
-    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=512, use_cache=True)
-    return tokenizer.decode(_, skip_special_tokens=True)
+    outputs = model.generate(
+        **text_inputs,
+        images=vision_inputs,
+        streamer=text_streamer,
+        max_new_tokens=512,
+        use_cache=True
+    )
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
