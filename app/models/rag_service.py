@@ -1,14 +1,16 @@
 from byaldi import RAGMultiModalModel
 import base64, io
 from PIL import Image
+import uuid
 
 RAG = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=1)
 
 def index_pdf(path: str):
+    unique_name = f"uploaded_{uuid.uuid4().hex[:8]}"
     RAG.index(
         input_path=path,
-        index_name="uploaded_doc",
-        store_collection_with_index=False,
+        index_name=unique_name,
+        store_collection_with_index=True,
         overwrite=True
     )
 
