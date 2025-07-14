@@ -15,6 +15,6 @@ def index_pdf(path: str):
     )
 
 def search_image(question: str):
-    results = RAG.search(question, k=1)
+    results = RAG.search(question, k=1, index_name=index_name)
     image_bytes = base64.b64decode(results[0].base64)
     return Image.open(io.BytesIO(image_bytes))
