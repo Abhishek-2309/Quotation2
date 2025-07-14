@@ -4,7 +4,7 @@ from PIL import Image
 
 def index_pdf(path: str):
     # Clear any previous index in memory
-    Rag = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=0)
+    RAG = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=0)
     
     # Use a unique index name but since we clear before, can reuse the same name safely
     RAG.index(
@@ -13,6 +13,7 @@ def index_pdf(path: str):
         store_collection_with_index=True,
         overwrite=True
     )
+    return RAG
 
 def search_image(question: str):
     results = RAG.search(question, k=1)
