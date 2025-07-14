@@ -49,12 +49,12 @@ async def extract_from_document(file: UploadFile = File(...)):
         tmp_file.write(await file.read())
         tmp_file_path = tmp_file.name
 
-    index_pdf(tmp_file_path)
+    index_name = index_pdf(tmp_file_path)
 
     result_json = {}
     for q in queries:
         try:
-            image = search_image(q["question"])
+            image = search_image(q["question"], index_name=index_name)
             result_text = run_answer(model, tokenizer, q["question"], image)
             result_json[q["key"]] = extract_json(result_text)
         except Exception as e:
