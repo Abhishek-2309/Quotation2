@@ -22,6 +22,26 @@ After getting the unit price table, write it as a json entry within the schema w
     {"key": "Wage Type", "question": "Find the wage type as either prevailing or non prevailing if not mentioned explicitly leave empty, return in json"},
     {"key": "Year", "question": "Find the year of the project, return in json"}
 ]
+import re
+import json
+
+def extract_json(text):
+    match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            return match.group(1).strip()
+    else:
+        # fallback: try finding any JSON-looking block
+        fallback = re.search(r"(\{.*?\})", text, re.DOTALL)
+        if fallback:
+            try:
+                return json.loads(fallback.group(1))
+            except json.JSONDecodeError:
+                return fallback.group(1).strip()
+        return text.strip()  # return raw text if nothing found
+
 
 @app.post("/extract")
 async def extract_from_document(file: UploadFile = File(...)):
@@ -36,7 +56,7 @@ async def extract_from_document(file: UploadFile = File(...)):
         try:
             image = search_image(q["question"])
             result_text = run_answer(model, tokenizer, q["question"], image)
-            result_json[q["key"]] = result_text
+            result_json[q["key"]] = extract_json(result_text)
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
 
