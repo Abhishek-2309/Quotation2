@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
-from services.rag_service import index_pdf, search_image
-from services.vl_model import load_model, run_answer
+from models.rag_service import index_pdf, search_image
+from models.vl_model import load_model, run_answer
 import tempfile, os
 
 app = FastAPI()
