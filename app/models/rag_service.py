@@ -1,22 +1,18 @@
 from byaldi import RAGMultiModalModel
 import base64, io
 from PIL import Image
-import uuid
 
 RAG = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=1)
 
 def index_pdf(path: str):
-    index_name = f"uploaded_{uuid.uuid4().hex[:8]}"
     RAG.index(
         input_path=path,
-        index_name=index_name,
+        index_name=f"uploaded_{uuid.uuid4().hex[:8]}",
         store_collection_with_index=True,
-        overwrite=True
+        overwrite=True,
     )
-    return index_name
 
-def search_image(question: str, index_name: str):
-    RAG.load(index_name=index_name)
+def search_image(question: str):
     results = RAG.search(question, k=1)
     if not results or not results[0].base64:
         raise ValueError(f"No image found for query: {question}")
