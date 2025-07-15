@@ -7,44 +7,15 @@ from models.vl_model import load_model, run_answer
 import tempfile, os, shutil
 import re
 import json
+from fastapi import Query
+from typing import List
+
 
 app = FastAPI()
 
 model, tokenizer = load_model()
 
-queries = [
-    {
-        "key": "Unit Price ($/Hr)",
-        "question": """
-        Extract the Unit Price ($/Hr) for the security guard from the provided document.
-Definitions:
-The Unit Price refers specifically to the hourly wage of a security guard.
-If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
-Do not confuse this with overtime, holiday, or weekend rates—these should be listed separately.
-
-Classification:
-If the document specifies whether the guard type is Prevailing or Non-Prevailing, classify it accordingly.
-If both types are mentioned, return separate entries for each under "Prevailing" and "Non-Prevailing".
-If neither is explicitly mentioned, classify the type as "None". Do not assume a wage type in this case.
-
-Format:
-Return the extracted data in the following JSON structure:
-{
-  "Unit Price ($/Hr)": {
-    "<Prevailing/Non-Prevailing/None>": {
-      "Unit Price ($/Hr)": "$<final hourly wage>",
-      "<Any additional rates (e.g., Overtime, Holiday)>": "$<rate>"
-    },
-    ...
-  }
-}
-
-Notes:
-Always extract the closest and most accurate match to the hourly wage from the document.
-Ensure only valid hourly wages are included
-Special rates (like overtime or holiday pay) should be included as separate key-value pairs under the appropriate wage type.
-"""
-    },
+Security_Service_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "Find the name of the Project for which the security service is provided, return in json with the key as 'Project"},
     {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
@@ -53,6 +24,38 @@ Special rates (like overtime or holiday pay) should be included as separate key-
     Do NOT return the year of founding, experience, or any certification expiry year. 
     Only return the year associated with the quotation document itself. 
     If not explicitly stated, leave it blank, return in json with key as: 'Year Quoted'"""}
+]
+
+rebar_queries = [
+    {"key": "Company Name", "question": "Find the Company Name of the Rebar Providing service, return in json with the key as 'Company Name' "},
+    {"key": "Epoxy Coated (Y/N)", "question": "Find whether rebar is epoxy coated or not(uncoated), return in json with the key as 'Epoxy Coated (Y/N)' and value as either Y/N"},
+    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnist or install or do both for rebar, return in json with key as: 'Scope Of Service'"},
+    {"key": "Average Unit Price ($/lb)", "question": "Find out the average unit price of installing the rebar in $/lb as mentioned in the document, mention all the rebar types in the document and their price, return in json with key as: 'Average Unit Price ($/lb)'"},
+    {"key": "Project", "question": "Find out the name of the project for which the rebar is provided for, with key as 'Project'"},
+    {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
+    This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
+    Do NOT return the year of founding, experience, or any certification expiry year. 
+    Only return the year associated with the quotation document itself. 
+    If not explicitly stated, leave it blank, return in json with key as: 'Year Quoted' """}
+    
+]
+
+firewall_queries = [
+    {"key": "Company Name", "question": "Find the Company Name of the Firewall Providing service, return in json with the key as 'Company Name' "},
+    {"key": "Project", "question": "Find the name of the Project for which the firewall service is provided, return in json with the key as 'Project"},
+    {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
+    This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
+    Do NOT return the year of founding, experience, or any certification expiry year. 
+    Only return the year associated with the quotation document itself. 
+    If not explicitly stated, leave it blank, return in json with key as: 'Year Quoted' """},
+    {"key": "Total Length(LF)", "question": "Find the total length in feet(LF) of the firewall provided based on document, return in json with the key as 'Total Length(LF)"},
+    {"key": "Average Height (LF)", "question": "Find the average height(Length in feet) of the firewall system provided, return in json with the key as 'Average Height (LF)"},
+    {"key": "Total SF", "question": "Find the Total Square feet of the firewall in terms of sq.ft/sf for which the firewall service is provided, return in json with the key as 'Total SF"},
+    {"key": "Total Price", "question": "Find the Total Price of the firewall as mentioned in the document, return in json with the key as 'Total Price"},
+    {"key": "Average Unit Price ($/SF)", "question": "Find the average unit price for the firewall service provided in the document which can also be computed by dividing the total price and total sf, return in json with the key as 'Average Unit Price ($/SF)"},
+    {"key": "Width Range (in)", "question": "Find the width range in inches of the firewall, return in json with the key as 'Width Range (in)'},
+    {"key": "Hr-Rating", "question": "Find the Hr-Rating of the firewall which is the fire-resistance rating that indicates the duration, in hours, that the wall can withstand a standard fire test, return in json with the key as 'Hr-Rating"},
+    
 ]
 
 def strip_prompt_from_output(text: str) -> str:
@@ -88,11 +91,11 @@ def extract_json(text: str):
     except json.JSONDecodeError:
         return json_str  # return raw string if still unparseable
 
-def process_pdf(pdf_path: str) -> dict:
+def process_sec_pdf(pdf_path: str) -> dict:
     RAG = index_pdf(pdf_path)
     result_json = {}
 
-    for q in queries:
+    for q in Security_Service_queries:
         if q["key"] == "Unit Price ($/Hr)":
             continue  # skip for now
         try:
@@ -193,6 +196,76 @@ def process_pdf(pdf_path: str) -> dict:
     return final_outputs
 
 
+def process_rebar_pdf(pdf_path: str) -> dict:
+    RAG = index_pdf(pdf_path)
+    result_json = {}
+
+    for q in rebar_queries:
+        try:
+            image = search_image(RAG, q["question"])
+            result_text = run_answer(model, tokenizer, q["question"], image)
+            extracted = extract_json(result_text)
+            if isinstance(extracted, dict) and q["key"] in extracted:
+                val = extracted[q["key"]]
+                if isinstance(val, str):
+                    try:
+                        val = json.loads(val)
+                    except json.JSONDecodeError:
+                        pass
+                result_json[q["key"]] = val
+            else:
+                result_json[q["key"]] = extracted
+        except Exception as e:
+            result_json[q["key"]] = f"Error: {str(e)}"
+    
+    return result_json
+
+def process_firewall_pdf(pdf_path: str) -> dict:
+    RAG = index_pdf(pdf_path)
+    result_json = {}
+
+    for q in firewall_queries:
+        try:
+            image = search_image(RAG, q["question"])
+            result_text = run_answer(model, tokenizer, q["question"], image)
+            extracted = extract_json(result_text)
+            if isinstance(extracted, dict) and q["key"] in extracted:
+                val = extracted[q["key"]]
+                if isinstance(val, str):
+                    try:
+                        val = json.loads(val)
+                    except json.JSONDecodeError:
+                        pass
+                result_json[q["key"]] = val
+            else:
+                result_json[q["key"]] = extracted
+        except Exception as e:
+            result_json[q["key"]] = f"Error: {str(e)}"
+    
+    return result_json
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endpoints
+
 @app.post("/extract")
 async def extract_from_document(file: UploadFile = File(...)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -255,9 +328,6 @@ async def extract_from_document(file: UploadFile = File(...)):
         final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data["None"]))
 
     return JSONResponse(content=final_outputs)
-
-from fastapi import Query
-from typing import List
 
 @app.post("/extract-folder")
 async def upload_and_process_folder(zip_file: UploadFile = File(...)):
