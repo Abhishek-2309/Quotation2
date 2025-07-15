@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, APIRouter
 from fastapi.responses import JSONResponse
 from models.rag_service import index_pdf, search_image
 from models.vl_model import load_model, run_answer
-import tempfile, os
+import tempfile, os, shutil
 import re
 import json
 
