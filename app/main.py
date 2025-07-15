@@ -212,30 +212,37 @@ from typing import List
 
 @app.post("/extract-folder")
 async def upload_and_process_folder(zip_file: UploadFile = File(...)):
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    tmp_dir = tempfile.mkdtemp()
+    
+    try:
         zip_path = os.path.join(tmp_dir, zip_file.filename)
         with open(zip_path, "wb") as f:
             f.write(await zip_file.read())
-
+    
         shutil.unpack_archive(zip_path, tmp_dir)
+    
+        all_results = []
+    
+        for root, _, files in os.walk(tmp_dir):
+            for fname in files:
+                if fname.lower().endswith(".pdf"):
+                    pdf_path = os.path.join(root, fname)
+                    try:
+                        results = process_pdf(pdf_path)
+                        print(results)
+                        all_results.extend(results)
+                    except Exception as e:
+                        all_results.append({
+                            "PDF": fname,
+                            "Error": str(e)
+                        })
+    
+        if not all_results:
+            raise HTTPException(status_code=404, detail="No PDF files processed")
 
-    all_results = []
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
 
-    for root, _, files in os.walk(tmp_dir):
-        for fname in files:
-            if fname.lower().endswith(".pdf"):
-                pdf_path = os.path.join(root, fname)
-                try:
-                    results = process_pdf(pdf_path)
-                    all_results.extend(results)
-                except Exception as e:
-                    all_results.append({
-                        "PDF": fname,
-                        "Error": str(e)
-                    })
-
-    if not all_results:
-        raise HTTPException(status_code=404, detail="No PDF files processed")
 
     # Write to CSV
     csv_path = os.path.join(tempfile.gettempdir(), "batch_extraction_results.csv")
