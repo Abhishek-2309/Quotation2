@@ -93,6 +93,8 @@ def process_pdf(pdf_path: str) -> dict:
     result_json = {}
 
     for q in queries:
+        if q["key"] == "Unit Price ($/Hr)":
+            continue  # skip for now
         try:
             image = search_image(RAG, q["question"])
             result_text = run_answer(model, tokenizer, q["question"], image)
@@ -110,44 +112,86 @@ def process_pdf(pdf_path: str) -> dict:
                 result_json[q["key"]] = extracted
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
-    
-    unit_price_data = result_json.get("Unit Price ($/Hr)", {})
-    company_name = result_json.get("Company Name", "")
-    project = result_json.get("Project", "")
-    year_quoted = result_json.get("Year Quoted", "")
-    wage_type_fallback = result_json.get("Wage Type", "")
+            
+    wage_type_info = result_json.get("Wage Type", "").strip()
+    wage_types = []
 
-    def create_final_obj(wage_type_key: str, price_dict: dict, notes = str):
+    if wage_type_info:
+        if "/" in wage_type_info:
+            wage_types = [wt.strip() for wt in wage_type_info.split("/")]
+        else:
+            wage_types = [wage_type_info]
+            
+    if wage_types:
+        wage_clauses = " ".join([
+            f'Return the entry for "{wt}" under key "{wt}" in the output JSON.'
+            for wt in wage_types
+        ])
+        wage_context = f"""
+        Return wages for the following type(s): {', '.join(wage_types)}.
+        {wage_clauses}
+        """
+    else:
+        wage_context = "Do not classify the wage as Prevailing or Non-Prevailing."
+
+    final_unit_price_prompt = f"""
+    Extract the Unit Price ($/Hr) for the security guard from the provided document.
+
+    Definitions:
+    The Unit Price refers specifically to the hourly wage of a security guard.
+    If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
+    Do not confuse this with overtime, holiday, or weekend rates—these should be listed separately.
+
+    {wage_context}
+
+    Format:
+    {{
+      "Unit Price ($/Hr)": {{
+        "<Wage Type or None>": {{
+          "Unit Price ($/Hr)": "$<final hourly wage>",
+          "<Any additional rates (e.g., Overtime, Holiday)>": "$<rate>"
+        }}
+      }}
+    }}
+
+    Notes:
+    Always extract the closest and most accurate match to the hourly wage from the document.
+    Ensure only valid hourly wages are included.
+    Special rates (like overtime or holiday pay) should be included as separate key-value pairs under the appropriate wage type.
+    """
+    try:
+        image = search_image(RAG, final_unit_price_prompt)
+        result_text = run_answer(model, tokenizer, final_unit_price_prompt, image)
+        extracted = extract_json(result_text)
+        result_json["Unit Price ($/Hr)"] = extracted.get("Unit Price ($/Hr)", {})
+    except Exception as e:
+        result_json["Unit Price ($/Hr)"] = f"Error: {str(e)}"
+        
+    def create_final_obj(wage_type: str, price_data: dict, notes: str = "") -> dict:
         return {
-            "Company Name": company_name,
-            "Wage Type": wage_type_key,
-            "Unit Price ($/Hr)": price_dict,
-            "Project": project,
-            "Year Quoted": year_quoted,
+            "Company Name": result_json.get("Company Name", ""),
+            "Wage Type": wage_type,
+            "Unit Price ($/Hr)": price_data,
+            "Project": result_json.get("Project", ""),
+            "Year Quoted": result_json.get("Year Quoted", ""),
             "Notes": notes
         }
 
     final_outputs = []
-    notes = ''
+    unit_price_data = result_json.get("Unit Price ($/Hr)", {})
 
     if not isinstance(unit_price_data, dict):
         return [create_final_obj("None", {}, "Invalid unit price format")]
-        
-    wage_types = []
-    if isinstance(wage_type_info, str):
-        if "/" in wage_type_info:
-            wage_types = [wt.strip() for wt in wage_type_info.split("/")]
-        elif wage_type_info:
-            wage_types = [wage_type_info]
-    if not wage_types:
-        notes = "Wage Type Not specified"
-        wage_types = [" "]
 
-    for wt in wage_types:
-        wage_data = unit_price_data.get(wt) or unit_price_data.get("None") or {}
-        final_outputs.append(create_final_obj(wt, wage_data, notes))
+    if wage_types:
+        for wt in wage_types:
+            wt_data = unit_price_data.get(wt, {})
+            final_outputs.append(create_final_obj(wt, wt_data))
+    else:
+        final_outputs.append(create_final_obj("None", unit_price_data.get("None", unit_price_data)))
 
     return final_outputs
+
 
 @app.post("/extract")
 async def extract_from_document(file: UploadFile = File(...)):
