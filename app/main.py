@@ -49,7 +49,7 @@ If no prevailing/non-prevailing split is found, just include a single dictionary
     },
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "Find the name of the Project for which the security service is provided, return in json with the key as 'Project"},
-    {"key": "Wage Type", "question": "Find the wage type of the guard as either prevailing or non prevailing. If both are mentioned, write prevailing/non prevailing, if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
+    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": "Find the year of the project mentioned in the quotation document, note this is the year in which the quotation is submitted, if not explicitly mentioned leave empty, return in json with key as: 'Year Quoted'"}
 ]
 
