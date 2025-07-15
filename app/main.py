@@ -53,22 +53,22 @@ If no prevailing/non-prevailing split is found, just include a single dictionary
     {"key": "Year Quoted", "question": "Find the year of the project mentioned in the quotation document, note this is the year in which the quotation is submitted, if not explicitly mentioned leave empty, return in json with key as: 'Year Quoted'"}
 ]
 
-def extract_json(text):
-    match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            return match.group(1).strip()
-    else:
-        # fallback: try finding any JSON-looking block
-        fallback = re.search(r"(\{.*?\})", text, re.DOTALL)
-        if fallback:
-            try:
-                return json.loads(fallback.group(1))
-            except json.JSONDecodeError:
-                return fallback.group(1).strip()
-        return text.strip()  # return raw text if nothing found
+def extract_json(text: str):
+    """
+    Extract JSON strictly from the assistant's response portion,
+    starting after the 'assistant' keyword.
+    """
+    if "assistant" in text:
+        # Only take the portion after 'assistant'
+        text = text.split("assistant", 1)[-1].strip()
+
+    text = text.strip().strip("`").strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text  
+
 
 
 @app.post("/extract")
@@ -87,9 +87,16 @@ async def extract_from_document(file: UploadFile = File(...)):
             print(result_text)
             extracted = extract_json(result_text)
             if isinstance(extracted, dict) and q["key"] in extracted:
-                result_json[q["key"]] = extracted[q["key"]]
+                val = extracted[q["key"]]
+                if isinstance(val, str):
+                    try:
+                        val = json.loads(val)
+                    except json.JSONDecodeError:
+                        pass
+                result_json[q["key"]] = val
             else:
-                result_json[q["key"]] = extracted  # fallback: return full object or string
+                result_json[q["key"]] = extracted
+    
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
 
