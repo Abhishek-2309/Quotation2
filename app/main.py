@@ -116,7 +116,7 @@ def process_pdf(pdf_path: str) -> dict:
             "Wage Type": wage_type_key,
             "Unit Price ($/Hr)": price_dict,
             "Project": project,
-            "Year Quoted": year_quoted
+            "Year Quoted": year_quoted,
             "Notes": notes
         }
 
