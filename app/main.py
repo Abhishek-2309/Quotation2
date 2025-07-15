@@ -50,24 +50,42 @@ If no prevailing/non-prevailing split is found, just include a single dictionary
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "Find the name of the Project for which the security service is provided, return in json with the key as 'Project"},
     {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
-    {"key": "Year Quoted", "question": "Find the year of the project mentioned in the quotation document, note this is the year in which the quotation is submitted, if not explicitly mentioned leave empty, return in json with key as: 'Year Quoted'"}
+    {"key": "Year Quoted", "question": "Find the year quoted as mentioned in the quotation document, note this is the year associated with the document's creation or issuance, if not explicitly mentioned leave empty, return in json with key as: 'Year Quoted'"}
 ]
+
+def strip_prompt_from_output(text: str) -> str:
+    """
+    Removes everything before and including the last occurrence of 'assistant\n' in the model output.
+    Assumes that the JSON starts right after this.
+    """
+    split_pattern = r"(?:^|\n)assistant\s*\n"
+    parts = re.split(split_pattern, text, maxsplit=1)
+    if len(parts) == 2:
+        return parts[1].strip()
+    return text.strip()
+
 
 def extract_json(text: str):
     """
-    Extract JSON strictly from the assistant's response portion,
-    starting after the 'assistant' keyword.
+    Strips prompt using 'strip_prompt_from_output' and tries to load clean JSON.
+    Also unwraps markdown fences like ```json ... ``` if needed.
     """
-    if "assistant" in text:
-        # Only take the portion after 'assistant'
-        text = text.split("assistant", 1)[-1].strip()
+    text = strip_prompt_from_output(text)
 
-    text = text.strip().strip("`").strip()
+    # Remove markdown-style ```json ... ```
+    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if match:
+        json_str = match.group(1).strip()
+    else:
+        # fallback: extract the first JSON-like block
+        fallback = re.search(r"(\{.*\})", text, re.DOTALL)
+        json_str = fallback.group(1).strip() if fallback else text
 
     try:
-        return json.loads(text)
+        return json.loads(json_str)
     except json.JSONDecodeError:
-        return text  
+        return json_str  # return raw string if still unparseable
+
 
 
 
@@ -99,7 +117,8 @@ async def extract_from_document(file: UploadFile = File(...)):
     
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
-
+    
+    print(result_json)
     os.unlink(tmp_file_path)
     unit_price_data = result_json.get("Unit Price ($/Hr)", {})
     company_name = result_json.get("Company Name", "")
