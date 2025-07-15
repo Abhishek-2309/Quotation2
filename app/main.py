@@ -59,6 +59,7 @@ async def extract_from_document(file: UploadFile = File(...)):
         try:
             image = search_image(RAG, q["question"])  # Always uses latest doc
             result_text = run_answer(model, tokenizer, q["question"], image)
+            print(result_text)
             result_json[q["key"]] = extract_json(result_text)[q['key']]
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
