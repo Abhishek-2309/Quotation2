@@ -27,7 +27,7 @@ Return the final output in the following JSON structure:
 ```json
 {
   "Unit Price ($/Hr)": {
-    "Prevailing": {
+    "<Prevailing/Non-Prevailing/None>": {
       "Security Guard Type A": {
         "Base Wage": "$X",
         "Additional Charges": {
@@ -39,7 +39,7 @@ Return the final output in the following JSON structure:
       },
       ...
     },
-    "Non-Prevailing": {
+    "<Prevailing/Non-Prevailing/None>": {
       ...
     }
   }
@@ -150,7 +150,7 @@ async def extract_from_document(file: UploadFile = File(...)):
             final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
         if not has_prevailing and not has_non_prevailing:
             # No separate categories, fallback
-            final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data))
+            final_outputs.append(create_final_obj(unit_price_data['None']))
     else:
         # If the model returned the unit price as a string or non-dict
         final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data))
