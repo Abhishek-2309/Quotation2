@@ -20,7 +20,7 @@ Each type of guard should be a key in a nested JSON, and its value should includ
 - Any conditional/additional charges (e.g., allowances, taxes, fees)
 - The final computed Unit Price ($/Hr) after all additions
 - If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
-
+Do not return shift descriptors or schedule labels as keys unless they are clearly labeled as guard types. Only If explicitly mentioned that wages are Prevailing/Non Prevailing, classify them. If no prevailing/non-prevailing split is found, just include a single dictionary under "Unit Price ($/Hr)".
 If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
 
 Return the final output in the following JSON structure:
@@ -44,7 +44,6 @@ Return the final output in the following JSON structure:
     }
   }
 }
-If no prevailing/non-prevailing split is found, just include a single dictionary under "Unit Price ($/Hr)".
 """
     },
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
