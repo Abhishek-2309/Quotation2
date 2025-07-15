@@ -138,8 +138,8 @@ def process_pdf(pdf_path: str) -> dict:
             if "Non-Prevailing" in unit_price_data:
                 final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"], notes))
     else:
-        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data.get("None", {}), notes))
-    
+        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data['None'], notes))
+    print(result_json)
     return final_outputs
 
 
