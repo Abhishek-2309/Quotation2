@@ -15,32 +15,23 @@ model, tokenizer = load_model()
 queries = [
     {
         "key": "Unit Price ($/Hr)",
-        "question": """Extract the Unit Price ($/Hr) for all types of security guards mentioned in this quotation. The Unit Price is the final hourly wage after considering all additional or conditional charges.
-Each type of guard should be a key in a nested JSON, and its value should include:
-- Base Wages which is the wage before adding the additional charges to make up the Unit Price, if not explicitly stated, ignore.
-- Any conditional/additional charges (e.g., allowances, taxes, fees)
-- The final computed Unit Price ($/Hr) after all additions
+        "question": """Extract the Unit Price ($/Hr) of the security guard mentioned in the document. The Unit Price is the final hourly wage after considering all additional or conditional charges(e.g., allowances, taxes, fees).
+DO NOT confuse unit price with the overtime rate, 
 - If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
 Note:
-If the given guard type is explicitly shown to be Prevailing/Non Prevailing, Classify the type as either Prevailing or Non-Prevailing. If neither is present classify it as 'None', do NOT assume wage type as either. If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
-Guard Type Should be explicitly clear. It is defined for a SINGLE guard only. Do not assume any additional guards or security as guard type, each guard type should clearly have hourly wages. All wages are in $/hr, Do not include any other wages not defined in this format.
+If the given guard type is explicitly shown to be Prevailing/Non Prevailing, Classify the type as either Prevailing or Non-Prevailing. If neither is present classify it as 'None', do NOT assume wage type as either. 
+If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
+Unit price should clearly have hourly wages. Do not include any other wages not defined in this format.
 
 Return the final output in the following JSON structure:
 ```json
 {
   "Unit Price ($/Hr)": {
     "<Prevailing/Non-Prevailing/None>": {
-      "Security Guard Type A": {
-        "Base Wage": "$X",
-        "Additional Charges": {
-          "<field1 from document>": "$...",
-          "<field1 from document>": "$..."
-        },
         "Unit Price ($/Hr)": "$Total"
         "<Any special rates for overtime/holiday in document>": "$..."
       },
       ...
-    },
     "<Prevailing/Non-Prevailing/None>": {
       ...
     }
@@ -119,27 +110,30 @@ def process_pdf(pdf_path: str) -> dict:
     year_quoted = result_json.get("Year Quoted", "")
     wage_type_fallback = result_json.get("Wage Type", "")
 
-    def create_final_obj(wage_type_key: str, price_dict: dict):
+    def create_final_obj(wage_type_key: str, price_dict: dict, notes = str):
         return {
-            "PDF": os.path.basename(pdf_path),
-            "Unit Price ($/Hr)": price_dict,
             "Company Name": company_name,
-            "Project": project,
             "Wage Type": wage_type_key,
+            "Unit Price ($/Hr)": price_dict,
+            "Project": project,
             "Year Quoted": year_quoted
+            "Notes": notes
         }
 
     final_outputs = []
-
+    notes = ''
+    if not wage_type_fallback:
+        notes = 'Wage Type Not specified'
+        
     if wage_type_fallback:
         if isinstance(unit_price_data, dict):
             if "Prevailing" in unit_price_data:
-                final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"]))
+                final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"], notes))
             if "Non-Prevailing" in unit_price_data:
-                final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
+                final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"], notes))
     else:
-        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data.get("None", {})))
-
+        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data.get("None", {}), notes))
+    
     return final_outputs
 
 
