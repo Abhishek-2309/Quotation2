@@ -21,7 +21,7 @@ Each type of guard should be a key in a nested JSON, and its value should includ
 - If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
 Note:
 If the given guard type is explicitly shown to be Prevailing/Non Prevailing, Classify the type as either Prevailing or Non-Prevailing. If neither is present classify it as 'None', do NOT assume wage type as either. If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
-Guard Type Should be explicitly clear. It is defined for a SINGLE guard only. Do not assume any additional guards or security as guard type, each guard type should clearly have hourly wages.
+Guard Type Should be explicitly clear. It is defined for a SINGLE guard only. Do not assume any additional guards or security as guard type, each guard type should clearly have hourly wages. All wages are in $/hr, Do not include any other wages not defined in this format.
 
 Return the final output in the following JSON structure:
 ```json
@@ -151,6 +151,6 @@ async def extract_from_document(file: UploadFile = File(...)):
                 final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
     else:
         # If the model returned the unit price as a string or non-dict
-        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data))
+        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data["None"]))
 
     return JSONResponse(content=final_outputs)
