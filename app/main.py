@@ -20,8 +20,8 @@ Each type of guard should be a key in a nested JSON, and its value should includ
 - The final computed Unit Price ($/Hr) after all additions
 - If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
 Note:
-Classify the type as either Prevailing or Non-Prevailing only if explicitly mentioned, do NOT assume. If not mentioned, classify as None. If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
-Guard Type Should be explicitly clear, do not assume any additionl guards or security as guard type, each guard type should clearly have hourly wages 
+If the given guard type is explicitly shown to be Prevailing/Non Prevailing, Classify the type as either Prevailing or Non-Prevailing. If neither is present classify it as 'None', do NOT assume wage type as either. If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
+Guard Type Should be explicitly clear. It is defined for a SINGLE guard only. Do not assume any additional guards or security as guard type, each guard type should clearly have hourly wages.
 
 Return the final output in the following JSON structure:
 ```json
@@ -140,17 +140,15 @@ async def extract_from_document(file: UploadFile = File(...)):
 
     final_outputs = []
 
-    if isinstance(unit_price_data, dict):
-        has_prevailing = "Prevailing" in unit_price_data
-        has_non_prevailing = "Non-Prevailing" in unit_price_data
-
-        if has_prevailing:
-            final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"]))
-        if has_non_prevailing:
-            final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
-        if not has_prevailing and not has_non_prevailing:
-            # No separate categories, fallback
-            final_outputs.append(create_final_obj(unit_price_data['None']))
+    if wage_type_fallback:
+        if isinstance(unit_price_data, dict):
+            has_prevailing = "Prevailing" in unit_price_data
+            has_non_prevailing = "Non-Prevailing" in unit_price_data
+    
+            if has_prevailing:
+                final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"]))
+            if has_non_prevailing:
+                final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
     else:
         # If the model returned the unit price as a string or non-dict
         final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data))
