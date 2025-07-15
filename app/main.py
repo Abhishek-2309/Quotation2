@@ -13,13 +13,38 @@ model, tokenizer = load_model()
 queries = [
     {
         "key": "Unit Price ($/Hr)",
-        "question": """Find the Unit Price($/Hr) per Hour of all the types of security guards mentioned. The Unit Price($/Hr) refers to the Wages of the Security Guard per hour. 
-The unit price should be the the total wage rate obtained after all the conditional charges.
-The output should be a json schema with the key consisting of the type(s) of security guard mentioned and the value being all the conditional charges alongside the base rate. The Unit Price($/hr) should be the total after all these are considered. 
-If overtime rates or any other rates are mentioned, they should be a separate value under the same type of security guard
-If multiple Categories of guards/Wages are mentioned, mention them as separate keys within the json schema.
-The final output should be a json schema with the key being 'Unit Price($/Hr)' and its value being all these previously obtained security guards.
-Note: If both prevailing/non prevailing rates are mentioned, create separate JSON entries for both following the previous schema.
+        "question": """Extract the Unit Price ($/Hr) for all types of security guards mentioned in this quotation. The Unit Price is the final hourly wage after considering all additional or conditional charges.
+
+Each type of guard should be a key in a nested JSON, and its value should include:
+- Base Rate
+- Any conditional/additional charges (e.g., allowances, taxes, fees)
+- The final computed Unit Price ($/Hr) after all additions
+- If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
+
+If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
+
+Return the final output in the following JSON structure:
+```json
+{
+  "Unit Price ($/Hr)": {
+    "Prevailing": {
+      "Security Guard Type A": {
+        "Base Rate": "$X",
+        "Additional Charges": {
+          "Health Benefit": "$Y",
+          "Holiday Pay": "$Z"
+        },
+        "Final Rate": "$Total",
+        "Overtime Rate": "$O"
+      },
+      ...
+    },
+    "Non-Prevailing": {
+      ...
+    }
+  }
+}
+If no prevailing/non-prevailing split is found, just include a single dictionary under "Unit Price ($/Hr)".
 """
     },
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
@@ -60,9 +85,45 @@ async def extract_from_document(file: UploadFile = File(...)):
             image = search_image(RAG, q["question"])  # Always uses latest doc
             result_text = run_answer(model, tokenizer, q["question"], image)
             print(result_text)
-            result_json[q["key"]] = extract_json(result_text)[q['key']]
+            extracted = extract_json(result_text)
+            if isinstance(extracted, dict) and q["key"] in extracted:
+                result_json[q["key"]] = extracted[q["key"]]
+            else:
+                result_json[q["key"]] = extracted  # fallback: return full object or string
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
 
     os.unlink(tmp_file_path)
-    return JSONResponse(content=result_json)
+    unit_price_data = result_json.get("Unit Price ($/Hr)", {})
+    company_name = result_json.get("Company Name", "")
+    project = result_json.get("Project", "")
+    year_quoted = result_json.get("Year Quoted", "")
+    wage_type_fallback = result_json.get("Wage Type", "")
+
+    def create_final_obj(wage_type_key: str, price_dict: dict):
+        return {
+            "Unit Price ($/Hr)": price_dict,
+            "Company Name": company_name,
+            "Project": project,
+            "Wage Type": wage_type_key,
+            "Year Quoted": year_quoted
+        }
+
+    final_outputs = []
+
+    if isinstance(unit_price_data, dict):
+        has_prevailing = "Prevailing" in unit_price_data
+        has_non_prevailing = "Non-Prevailing" in unit_price_data
+
+        if has_prevailing:
+            final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"]))
+        if has_non_prevailing:
+            final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
+        if not has_prevailing and not has_non_prevailing:
+            # No separate categories, fallback
+            final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data))
+    else:
+        # If the model returned the unit price as a string or non-dict
+        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data))
+
+    return JSONResponse(content=final_outputs)
