@@ -49,7 +49,11 @@ Return the final output in the following JSON structure:
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "Find the name of the Project for which the security service is provided, return in json with the key as 'Project"},
     {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
-    {"key": "Year Quoted", "question": "Find the year quoted as mentioned in the quotation document, note this is the year associated with the document's creation or issuance, if not explicitly mentioned leave empty, return in json with key as: 'Year Quoted'"}
+    {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
+    This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
+    Do NOT return the year of founding, experience, or any certification expiry year. 
+    Only return the year associated with the quotation document itself. 
+    If not explicitly stated, leave it blank, return in json with key as: 'Year Quoted'"""}
 ]
 
 def strip_prompt_from_output(text: str) -> str:
