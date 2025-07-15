@@ -210,15 +210,17 @@ from typing import List
 router = APIRouter()
 
 @router.post("/extract-folder")
-async def extract_from_folder(
-    folder_path: str = Query(..., description="Path to folder on server containing PDFs")
-):
-    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
-        raise HTTPException(status_code=400, detail="Invalid folder path")
+async def upload_and_process_folder(zip_file: UploadFile = File(...)):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        zip_path = os.path.join(tmp_dir, zip_file.filename)
+        with open(zip_path, "wb") as f:
+            f.write(await zip_file.read())
+
+        shutil.unpack_archive(zip_path, tmp_dir)
 
     all_results = []
 
-    for root, _, files in os.walk(folder_path):
+    for root, _, files in os.walk(tmp_dir):
         for fname in files:
             if fname.lower().endswith(".pdf"):
                 pdf_path = os.path.join(root, fname)
