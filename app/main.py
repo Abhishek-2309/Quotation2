@@ -1,6 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, APIRouter
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, UploadFile, File, APIRouter, HTTPException
+from fastapi.responses import JSONResponse, FileResponse
 from models.rag_service import index_pdf, search_image
+import csv
+import tempfile
 from models.vl_model import load_model, run_answer
 import tempfile, os, shutil
 import re
