@@ -97,6 +97,7 @@ def process_pdf(pdf_path: str) -> dict:
             image = search_image(RAG, q["question"])
             result_text = run_answer(model, tokenizer, q["question"], image)
             extracted = extract_json(result_text)
+            print(extracted)
             if isinstance(extracted, dict) and q["key"] in extracted:
                 val = extracted[q["key"]]
                 if isinstance(val, str):
@@ -128,21 +129,25 @@ def process_pdf(pdf_path: str) -> dict:
 
     final_outputs = []
     notes = ''
-    if not wage_type_fallback:
-        notes = 'Wage Type Not specified'
+
+    if not isinstance(unit_price_data, dict):
+        return [create_final_obj("None", {}, "Invalid unit price format")]
         
-    if wage_type_fallback:
-        if isinstance(unit_price_data, dict):
-            if "Prevailing" in unit_price_data:
-                final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"], notes))
-            if "Non-Prevailing" in unit_price_data:
-                final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"], notes))
-    else:
-        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data['None'], notes))
-    print(result_json)
+    wage_types = []
+    if isinstance(wage_type_info, str):
+        if "/" in wage_type_info:
+            wage_types = [wt.strip() for wt in wage_type_info.split("/")]
+        elif wage_type_info:
+            wage_types = [wage_type_info]
+    if not wage_types:
+        notes = "Wage Type Not specified"
+        wage_types = [" "]
+
+    for wt in wage_types:
+        wage_data = unit_price_data.get(wt) or unit_price_data.get("None") or {}
+        final_outputs.append(create_final_obj(wt, wage_data, notes))
+
     return final_outputs
-
-
 
 @app.post("/extract")
 async def extract_from_document(file: UploadFile = File(...)):
