@@ -15,33 +15,39 @@ model, tokenizer = load_model()
 queries = [
     {
         "key": "Unit Price ($/Hr)",
-        "question": """Extract the Unit Price ($/Hr) of the security guard mentioned in the document. The Unit Price is the final hourly wage after considering all additional or conditional charges(e.g., allowances, taxes, fees).
-DO NOT confuse unit price with the overtime rate, 
-- If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
-Note:
-If the given guard type is explicitly shown to be Prevailing/Non Prevailing, Classify the type as either Prevailing or Non-Prevailing. If neither is present classify it as 'None', do NOT assume wage type as either. 
-If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
-Unit price should clearly have hourly wages. Do not include any other wages not defined in this format.
+        "question": """
+        Extract the Unit Price ($/Hr) for the security guard from the provided document.
+Definitions:
+The Unit Price refers specifically to the hourly wage of a security guard.
+If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
+Do not confuse this with overtime, holiday, or weekend rates—these should be listed separately.
 
-Return the final output in the following JSON structure:
-```json
+Classification:
+If the document specifies whether the guard type is Prevailing or Non-Prevailing, classify it accordingly.
+If both types are mentioned, return separate entries for each under "Prevailing" and "Non-Prevailing".
+If neither is explicitly mentioned, classify the type as "None". Do not assume a wage type in this case.
+
+Format:
+Return the extracted data in the following JSON structure:
 {
   "Unit Price ($/Hr)": {
     "<Prevailing/Non-Prevailing/None>": {
-        "Unit Price ($/Hr)": "$Total"
-        "<Any special rates for overtime/holiday in document>": "$..."
-      },
-      ...
-    "<Prevailing/Non-Prevailing/None>": {
-      ...
-    }
+      "Unit Price ($/Hr)": "$<final hourly wage>",
+      "<Any additional rates (e.g., Overtime, Holiday)>": "$<rate>"
+    },
+    ...
   }
 }
+
+Notes:
+Always extract the closest and most accurate match to the hourly wage from the document.
+Ensure only valid hourly wages are included
+Special rates (like overtime or holiday pay) should be included as separate key-value pairs under the appropriate wage type.
 """
     },
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "Find the name of the Project for which the security service is provided, return in json with the key as 'Project"},
-    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
+    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
