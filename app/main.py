@@ -7,6 +7,8 @@ import re
 import json
 
 app = FastAPI()
+router = APIRouter()
+app.include_router(router)
 
 model, tokenizer = load_model()
 
@@ -207,8 +209,6 @@ async def extract_from_document(file: UploadFile = File(...)):
 
 from fastapi import Query
 from typing import List
-router = APIRouter()
-
 @router.post("/extract-folder")
 async def upload_and_process_folder(zip_file: UploadFile = File(...)):
     with tempfile.TemporaryDirectory() as tmp_dir:
