@@ -11,10 +11,7 @@ def load_model():
     return model, tokenizer
 
 def run_answer(model, tokenizer, question: str, image):
-    prompt = f"""Answer the question based on the following image.
-Don't use markdown.
-Please provide enough context for your answer.
-
+    prompt = f"""Answer the question based on the following image. Give your final answer strictly in a json schema with the same key asked in question.
 Question: {question}"""
 
     messages = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": prompt}]}]
