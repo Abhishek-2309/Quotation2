@@ -16,7 +16,7 @@ queries = [
         "question": """Extract the Unit Price ($/Hr) for all types of security guards mentioned in this quotation. The Unit Price is the final hourly wage after considering all additional or conditional charges.
 
 Each type of guard should be a key in a nested JSON, and its value should include:
-- Base Rate
+- Base Wages which is the wage before adding the additional charges to make up the Unit Price, if not explicitly stated, ignore.
 - Any conditional/additional charges (e.g., allowances, taxes, fees)
 - The final computed Unit Price ($/Hr) after all additions
 - If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
@@ -29,13 +29,13 @@ Return the final output in the following JSON structure:
   "Unit Price ($/Hr)": {
     "Prevailing": {
       "Security Guard Type A": {
-        "Base Rate": "$X",
+        "Base Wage": "$X",
         "Additional Charges": {
-          "Health Benefit": "$Y",
-          "Holiday Pay": "$Z"
+          "<field1 from document>": "$...",
+          "<field1 from document>": "$..."
         },
-        "Final Rate": "$Total",
-        "Overtime Rate": "$O"
+        "Unit Price ($/Hr)": "$Total"
+        "<Any special rates for overtime/holiday in document>": "$..."
       },
       ...
     },
