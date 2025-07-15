@@ -89,6 +89,56 @@ def extract_json(text: str):
     except json.JSONDecodeError:
         return json_str  # return raw string if still unparseable
 
+def process_pdf(pdf_path: str) -> dict:
+    RAG = index_pdf(pdf_path)
+    result_json = {}
+
+    for q in queries:
+        try:
+            image = search_image(RAG, q["question"])
+            result_text = run_answer(model, tokenizer, q["question"], image)
+            extracted = extract_json(result_text)
+            if isinstance(extracted, dict) and q["key"] in extracted:
+                val = extracted[q["key"]]
+                if isinstance(val, str):
+                    try:
+                        val = json.loads(val)
+                    except json.JSONDecodeError:
+                        pass
+                result_json[q["key"]] = val
+            else:
+                result_json[q["key"]] = extracted
+        except Exception as e:
+            result_json[q["key"]] = f"Error: {str(e)}"
+    
+    unit_price_data = result_json.get("Unit Price ($/Hr)", {})
+    company_name = result_json.get("Company Name", "")
+    project = result_json.get("Project", "")
+    year_quoted = result_json.get("Year Quoted", "")
+    wage_type_fallback = result_json.get("Wage Type", "")
+
+    def create_final_obj(wage_type_key: str, price_dict: dict):
+        return {
+            "PDF": os.path.basename(pdf_path),
+            "Unit Price ($/Hr)": price_dict,
+            "Company Name": company_name,
+            "Project": project,
+            "Wage Type": wage_type_key,
+            "Year Quoted": year_quoted
+        }
+
+    final_outputs = []
+
+    if wage_type_fallback:
+        if isinstance(unit_price_data, dict):
+            if "Prevailing" in unit_price_data:
+                final_outputs.append(create_final_obj("Prevailing", unit_price_data["Prevailing"]))
+            if "Non-Prevailing" in unit_price_data:
+                final_outputs.append(create_final_obj("Non-Prevailing", unit_price_data["Non-Prevailing"]))
+    else:
+        final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data.get("None", {})))
+
+    return final_outputs
 
 
 
@@ -154,3 +204,41 @@ async def extract_from_document(file: UploadFile = File(...)):
         final_outputs.append(create_final_obj(wage_type_fallback, unit_price_data["None"]))
 
     return JSONResponse(content=final_outputs)
+
+from fastapi import Query
+from typing import List
+
+@router.post("/extract-folder")
+async def extract_from_folder(
+    folder_path: str = Query(..., description="Path to folder on server containing PDFs")
+):
+    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+        raise HTTPException(status_code=400, detail="Invalid folder path")
+
+    all_results = []
+
+    for root, _, files in os.walk(folder_path):
+        for fname in files:
+            if fname.lower().endswith(".pdf"):
+                pdf_path = os.path.join(root, fname)
+                try:
+                    results = process_pdf(pdf_path)
+                    all_results.extend(results)
+                except Exception as e:
+                    all_results.append({
+                        "PDF": fname,
+                        "Error": str(e)
+                    })
+
+    if not all_results:
+        raise HTTPException(status_code=404, detail="No PDF files processed")
+
+    # Write to CSV
+    csv_path = os.path.join(tempfile.gettempdir(), "batch_extraction_results.csv")
+    with open(csv_path, mode="w", newline='', encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=all_results[0].keys())
+        writer.writeheader()
+        for row in all_results:
+            writer.writerow(row)
+
+    return FileResponse(csv_path, filename="extracted_results.csv", media_type="text/csv")
