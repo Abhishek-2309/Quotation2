@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, APIRouter
 from fastapi.responses import JSONResponse
 from models.rag_service import index_pdf, search_image
 from models.vl_model import load_model, run_answer
@@ -207,6 +207,7 @@ async def extract_from_document(file: UploadFile = File(...)):
 
 from fastapi import Query
 from typing import List
+router = APIRouter()
 
 @router.post("/extract-folder")
 async def extract_from_folder(
