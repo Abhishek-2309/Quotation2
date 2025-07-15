@@ -53,7 +53,7 @@ firewall_queries = [
     {"key": "Total SF", "question": "Find the Total Square feet of the firewall in terms of sq.ft/sf for which the firewall service is provided, return in json with the key as 'Total SF"},
     {"key": "Total Price", "question": "Find the Total Price of the firewall as mentioned in the document, return in json with the key as 'Total Price"},
     {"key": "Average Unit Price ($/SF)", "question": "Find the average unit price for the firewall service provided in the document which can also be computed by dividing the total price and total sf, return in json with the key as 'Average Unit Price ($/SF)"},
-    {"key": "Width Range (in)", "question": "Find the width range in inches of the firewall, return in json with the key as 'Width Range (in)'},
+    {"key": "Width Range (in)", "question": "Find the width range in inches of the firewall, return in json with the key as 'Width Range (in)'"},
     {"key": "Hr-Rating", "question": "Find the Hr-Rating of the firewall which is the fire-resistance rating that indicates the duration, in hours, that the wall can withstand a standard fire test, return in json with the key as 'Hr-Rating"},
     
 ]
