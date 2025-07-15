@@ -14,14 +14,14 @@ queries = [
     {
         "key": "Unit Price ($/Hr)",
         "question": """Extract the Unit Price ($/Hr) for all types of security guards mentioned in this quotation. The Unit Price is the final hourly wage after considering all additional or conditional charges.
-
 Each type of guard should be a key in a nested JSON, and its value should include:
 - Base Wages which is the wage before adding the additional charges to make up the Unit Price, if not explicitly stated, ignore.
 - Any conditional/additional charges (e.g., allowances, taxes, fees)
 - The final computed Unit Price ($/Hr) after all additions
 - If overtime or weekend rates are mentioned, include them under separate keys inside the same guard type
-Do not return shift descriptors or schedule labels as keys unless they are clearly labeled as guard types. Only If explicitly mentioned that wages are Prevailing/Non Prevailing, classify them. If no prevailing/non-prevailing split is found, just include a single dictionary under "Unit Price ($/Hr)".
-If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
+Note:
+Classify the type as either Prevailing or Non-Prevailing only if explicitly mentioned, do NOT assume. If not mentioned, classify as None. If both Prevailing and Non-Prevailing wages are mentioned, separate them into two distinct JSON objects under keys `"Prevailing"` and `"Non-Prevailing"`.
+Guard Type Should be explicitly clear, do not assume any additionl guards or security as guard type, each guard type should clearly have hourly wages 
 
 Return the final output in the following JSON structure:
 ```json
