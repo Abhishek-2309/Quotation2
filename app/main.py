@@ -18,12 +18,9 @@ model, tokenizer = load_model()
 Security_Service_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": """Identify the name of the project for which the security service or the guard is being provided. Do not confuse this with the name of the company receiving the service. 
-    The 'Project' may appear in various formats, such as:
-    - 'Security Service at XYZ Construction Site'
-    - 'Deployment at ABC Mall, Mumbai'
-    - 'Security for Event: International Tech Summit 2025'
-    - 'Guarding services for Residential Tower 12A'. 
-    The 'Project' refers specifically to the **site, location, or initiative** where the security personnel are deployed or required. If the document does not mention any such project name, return an empty string. Output should be in JSON format with the key as 'Project'. """},
+    The Project name may appear in the subject or the body of the letter addressed to the receiver/Document header and more
+    It is the project for which the construction company would require security or guard services.
+    Output should be in JSON format with the key as 'Project'. """},
     {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
@@ -157,9 +154,9 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     Extract the Unit Price ($/Hr) for the security guard from the provided document.
 
     Definitions:
-    The Unit Price refers specifically to the hourly wage or billing rate of a security guard. This is inclusive of benefits, allowances or more.
+    The Unit Price refers specifically to the hourly wage or billing rate of a security guard. This is inclusive of benefits, allowances or more. This is the final billing/guard rate after all taxes and benefits are considered
     If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
-    Do not confuse this with overtime, holiday, or weekend rates— Rates like these which are separate from unit price/billing rate should be listed separately. If these rates are present, mention them under Additional rates
+    Rates such as Overtime, Holiday, or weekend rates are to be categorized under Additional rates— These are separate from unit price/billing rate should be listed separately. Their values are more than the regualr billing rate. If these rates are present, mention them under Additional rates
     If multiple types of security guards are mentioned with different Unit Prices, mention them under wage type.
     {wage_context}
 
