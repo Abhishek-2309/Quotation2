@@ -17,7 +17,7 @@ model, tokenizer = load_model()
 
 Security_Service_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
-    {"key": "Project", "question": "Find the name of the Project for which the security service is provided, return in json with the key as 'Project"},
+    {"key": "Project", "question": "Find the name of the Project for which the security service is provided, this is not to be confused with the receiver company name, it is the project for which the security service is needed. If not present, leave empty. Return in json with the key as 'Project"},
     {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
@@ -151,9 +151,9 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     Extract the Unit Price ($/Hr) for the security guard from the provided document.
 
     Definitions:
-    The Unit Price refers specifically to the hourly wage of a security guard.
+    The Unit Price refers specifically to the hourly wage or billing rate of a security guard. This is inclusive of benefits, allowances or more.
     If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
-    Do not confuse this with overtime, holiday, or weekend rates—these should be listed separately.
+    Do not confuse this with overtime, holiday, or weekend rates—these should be listed separately. If these rates are present, mention them under Additional rates
 
     {wage_context}
 
