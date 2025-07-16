@@ -33,7 +33,13 @@ rebar_queries = [
     {"key": "Average Unit Price ($/lb)", "question": """
     Find out the average unit price of installing the rebar in $/lb as mentioned in the document, 
     Mention all the rebar types in the document and their price, write in terms of $/lb only, if not given explicitly, compute based on price and weights, return in json with key as: 'Average Unit Price ($/lb)'
-    Finally give output as {'Average Unit Price ($/lb)': {'<rebar_type_1>':<'price_1'>,  '<rebar_type_2>':<'price_2'>,  } in json"""},
+    Finally give output as {
+              "Average Unit Price ($/lb)": {
+                "<Rebar Type 1>": <price_1>,
+                "<Rebar Type 2>": <price_2>,
+                ...
+              }
+            } in json"""},
 
     {"key": "Project", "question": "Find out the name of the project for which the rebar is provided for, with key as 'Project'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
