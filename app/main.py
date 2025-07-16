@@ -143,27 +143,27 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
             for wt in wage_types
         ])
         wage_context = f"""
-        Return wages for the following type(s): {', '.join(wage_types)}.
+        In the below JSON chema, Return wages for the following type(s): {', '.join(wage_types)}.
         {wage_clauses}
         """
     else:
-        wage_context = "Do not classify the wage as Prevailing or Non-Prevailing. Instead write the wage type explicitly as 'None'"
+        wage_context = "In the below JSON Schema, Write the wage type as 'None' and fill the rest of the details as specified"
 
     # Unit Price Extraction
     final_unit_price_prompt = f"""
     Extract the Unit Price ($/Hr) for the security guard from the provided document.
-
-    Definitions:
-    The Unit Price refers specifically to the hourly wage or billing rate of a security guard. This is inclusive of benefits, allowances or more. This is the final billing/guard rate after all taxes and benefits are considered
-    If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
-    Rates such as Overtime, Holiday, or weekend rates are to be categorized under Additional rates— These are separate from unit price/billing rate should be listed separately. Their values are more than the regualr billing rate. If these rates are present, mention them under Additional rates
-    If multiple types of security guards are mentioned with different Unit Prices, mention all of them under wage type.
+    - The *Unit Price* refers specifically to the hourly wage or billing rate of a security guard. It should be identified only in terms of $ per hr. 
+    - The *Unit Price* is the total bill rate or the total guard rate after all taxes and benefits are considered. 
+    - If multiple rates are given (e.g., base rate + additional/supplementary charges), compute the final effective hourly wage as the unit price.
+    - Rates such as Overtime, Holiday, or Weekend rates are to be categorized under Additional rates.
+    - *Additional rates* are separate from unit price/billing rate and should be listed separately. If detected, mention their accurate value as specified in the image.
+    - If the Image contains multiple types/description of guard services with different rates, identify them as a Security guard type(Eg: Armed/Unarmed/Level 1)
     {wage_context}
-
+    - 
     Format:
     {{
       "Unit Price ($/Hr)": {{
-        "<Wage Type or 'None'>": {{
+        "<Wage Type>": {{
           "<Type of Security Guard>": {{
             "Unit Price ($/Hr)": "$<final hourly wage>",
             "Additional rates": {{
