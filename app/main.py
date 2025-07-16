@@ -157,7 +157,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     The Unit Price refers specifically to the hourly wage or billing rate of a security guard. This is inclusive of benefits, allowances or more. This is the final billing/guard rate after all taxes and benefits are considered
     If multiple rates are given (e.g., base rate + additional/conditional charges), compute the final effective hourly wage as the unit price.
     Rates such as Overtime, Holiday, or weekend rates are to be categorized under Additional rates— These are separate from unit price/billing rate should be listed separately. Their values are more than the regualr billing rate. If these rates are present, mention them under Additional rates
-    If multiple types of security guards are mentioned with different Unit Prices, mention them under wage type.
+    If multiple types of security guards are mentioned with different Unit Prices, mention all of them under wage type.
     {wage_context}
 
     Format:
@@ -179,10 +179,10 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         image = search_image(RAG, final_unit_price_prompt)
         result_text = run_answer(model, tokenizer, final_unit_price_prompt, image)
         extracted = extract_json(result_text)
+        print(extracted)
         result_json["Unit Price ($/Hr)"] = extracted.get("Unit Price ($/Hr)", {})
     except Exception as e:
         result_json["Unit Price ($/Hr)"] = f"Error: {str(e)}"
-    print(result_json)
     # Final Flattened Output: One row per guard type
     unit_price_data = result_json.get("Unit Price ($/Hr)", {})
     if not isinstance(unit_price_data, dict):
