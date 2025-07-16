@@ -23,7 +23,7 @@ Security_Service_queries = [
     - 'Deployment at ABC Mall, Mumbai'
     - 'Security for Event: International Tech Summit 2025'
     - 'Guarding services for Residential Tower 12A'. 
-    The 'Project' refers specifically to the **site, location, or initiative** where the security personnel are deployed or required. If the document does not mention any such project name, return an empty string. Output should be in JSON format with the key as 'Project'."""}
+    The 'Project' refers specifically to the **site, location, or initiative** where the security personnel are deployed or required. If the document does not mention any such project name, return an empty string. Output should be in JSON format with the key as 'Project'. """},
     {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
