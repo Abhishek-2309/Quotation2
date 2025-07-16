@@ -30,7 +30,7 @@ rebar_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Rebar Providing service, return in json with the key as 'Company Name' "},
     {"key": "Epoxy Coated (Y/N)", "question": "Find whether rebar is epoxy coated or not(uncoated), return in json with the key as 'Epoxy Coated (Y/N)' and value as either Y/N"},
     {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnist or install or do both for rebar, return in json with key as: 'Scope Of Service'"},
-    {"key": "Average Unit Price ($/lb)", "question": "Find out the average unit price of installing the rebar in $/lb as mentioned in the document, mention all the rebar types in the document and their price, return in json with key as: 'Average Unit Price ($/lb)'"},
+    {"key": "Average Unit Price ($/lb)", "question": "Find out the average unit price of installing the rebar in $/lb as mentioned in the document, mention all the rebar types in the document and their price, write in terms of $/lb only, if not given explicitly, compute based on price and weights, return in json with key as: 'Average Unit Price ($/lb)'"},
     {"key": "Project", "question": "Find out the name of the project for which the rebar is provided for, with key as 'Project'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
@@ -218,7 +218,7 @@ def process_rebar_pdf(pdf_path: str) -> dict:
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
     
-    return result_json
+    return [result_json]
 
 def process_firewall_pdf(pdf_path: str) -> dict:
     RAG = index_pdf(pdf_path)
@@ -242,7 +242,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
     
-    return result_json
+    return [result_json]
 
 
 
