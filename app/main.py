@@ -134,7 +134,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         {wage_clauses}
         """
     else:
-        wage_context = "Do not classify the wage as Prevailing or Non-Prevailing."
+        wage_context = "Do not classify the wage as Prevailing or Non-Prevailing. Instead write the wage type explicitly as 'None'"
 
     # Unit Price Extraction
     final_unit_price_prompt = f"""
@@ -150,7 +150,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     Format:
     {{
       "Unit Price ($/Hr)": {{
-        "<Wage Type or None>": {{
+        "<Wage Type or 'None'>": {{
           "<Type of Security Guard>": {{
             "Unit Price ($/Hr)": "$<final hourly wage>",
             "Additional rates": {{
