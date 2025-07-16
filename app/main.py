@@ -264,7 +264,7 @@ def process_rebar_pdf(pdf_path: str) -> dict:
                     "Type": rebar_type,
                     "Price": price,
                     "Project": result_json.get("Project", ""),
-                    "Year Quoted": result_json.get("Year Quoted", "")
+                    "Year Quoted": result_json.get("Year Quoted", ""),
                     "Notes": result_json.get("Notes", "")
                 })
 
