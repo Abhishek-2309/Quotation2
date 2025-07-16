@@ -169,7 +169,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         result_json["Unit Price ($/Hr)"] = extracted.get("Unit Price ($/Hr)", {})
     except Exception as e:
         result_json["Unit Price ($/Hr)"] = f"Error: {str(e)}"
-
+    print(result_json)
     # Final Flattened Output: One row per guard type
     unit_price_data = result_json.get("Unit Price ($/Hr)", {})
     if not isinstance(unit_price_data, dict):
