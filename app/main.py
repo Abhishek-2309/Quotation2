@@ -91,11 +91,10 @@ def extract_json(text: str):
     except json.JSONDecodeError:
         return json_str  # return raw string if still unparseable
 
-def process_sec_pdf(pdf_path: str) -> dict:
+def process_sec_pdf(pdf_path: str) -> list[dict]:
     RAG = index_pdf(pdf_path)
     result_json = {}
 
-    # Step 1: Run all other queries
     for q in Security_Service_queries:
         if q["key"] == "Unit Price ($/Hr)":
             continue
@@ -116,7 +115,7 @@ def process_sec_pdf(pdf_path: str) -> dict:
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
 
-    # Step 2: Get Wage Type info
+    # Wage Type Handling
     wage_type_info = result_json.get("Wage Type", "").strip()
     wage_types = []
     if wage_type_info:
@@ -137,7 +136,7 @@ def process_sec_pdf(pdf_path: str) -> dict:
     else:
         wage_context = "Do not classify the wage as Prevailing or Non-Prevailing."
 
-    # Step 3: Unit Price Prompt
+    # Unit Price Extraction
     final_unit_price_prompt = f"""
     Extract the Unit Price ($/Hr) for the security guard from the provided document.
 
@@ -161,51 +160,66 @@ def process_sec_pdf(pdf_path: str) -> dict:
         }}
       }}
     }}
-
-    Notes:
-    - Ensure each guard type is nested under the correct wage type.
-    - Include all additional rates like overtime or holiday under "Additional rates".
-    - If only one type of guard or wage is mentioned, include only that.
-    - Always extract the closest and most accurate match to the hourly wage from the document.
     """
 
     try:
         image = search_image(RAG, final_unit_price_prompt)
         result_text = run_answer(model, tokenizer, final_unit_price_prompt, image)
         extracted = extract_json(result_text)
-        raw_unit_price_data = extracted.get("Unit Price ($/Hr)", {})
+        result_json["Unit Price ($/Hr)"] = extracted.get("Unit Price ($/Hr)", {})
     except Exception as e:
-        raw_unit_price_data = f"Error: {str(e)}"
+        result_json["Unit Price ($/Hr)"] = f"Error: {str(e)}"
 
-    # Step 4: Format unit price as multiline string
-    formatted_unit_price_block = ""
-    if isinstance(raw_unit_price_data, dict):
-        all_rows = []
-        for wage_type in wage_types or raw_unit_price_data.keys():
-            wage_data = raw_unit_price_data.get(wage_type, {})
-            for guard_type, details in wage_data.items():
-                price = details.get("Unit Price ($/Hr)", "")
-                addl = details.get("Additional rates", {})
-                if isinstance(addl, dict):
-                    addl_str = ", ".join(f"{k}: {v}" for k, v in addl.items())
-                else:
-                    addl_str = str(addl)
-                all_rows.append(f"{guard_type:<20} {price:<15} {addl_str}")
-        if all_rows:
-            header = "Type of Guard        Unit Price Rate   Additional Rates"
-            formatted_unit_price_block = header + "\n" + "\n".join(all_rows)
+    # Final Flattened Output: One row per guard type
+    unit_price_data = result_json.get("Unit Price ($/Hr)", {})
+    if not isinstance(unit_price_data, dict):
+        return [{
+            "Company Name": result_json.get("Company Name", ""),
+            "Project": result_json.get("Project", ""),
+            "Year Quoted": result_json.get("Year Quoted", ""),
+            "Wage Type": "None",
+            "Unit Price - Type": "",
+            "Unit Price - Rate": "",
+            "Unit Price - Additional Rates": "Invalid unit price format",
+            "Notes": "Error"
+        }]
+
+    output_rows = []
+
+    def parse_additional_rates(rates_dict):
+        if not isinstance(rates_dict, dict):
+            return ""
+        return ", ".join([f"{k}: {v}" for k, v in rates_dict.items()])
+
+    if wage_types:
+        for wt in wage_types:
+            guard_entries = unit_price_data.get(wt, {})
+            for guard_type, data in guard_entries.items():
+                output_rows.append({
+                    "Company Name": result_json.get("Company Name", ""),
+                    "Project": result_json.get("Project", ""),
+                    "Year Quoted": result_json.get("Year Quoted", ""),
+                    "Wage Type": wt,
+                    "Unit Price - Type": guard_type,
+                    "Unit Price - Rate": data.get("Unit Price ($/Hr)", ""),
+                    "Unit Price - Additional Rates": parse_additional_rates(data.get("Additional rates", {})),
+                    "Notes": result_json.get("Notes", "")
+                })
     else:
-        formatted_unit_price_block = str(raw_unit_price_data)  # error message if any
+        guard_entries = unit_price_data.get("None", unit_price_data)
+        for guard_type, data in guard_entries.items():
+            output_rows.append({
+                "Company Name": result_json.get("Company Name", ""),
+                "Project": result_json.get("Project", ""),
+                "Year Quoted": result_json.get("Year Quoted", ""),
+                "Wage Type": "None",
+                "Unit Price - Type": guard_type,
+                "Unit Price - Rate": data.get("Unit Price ($/Hr)", ""),
+                "Unit Price - Additional Rates": parse_additional_rates(data.get("Additional rates", {})),
+                "Notes": result_json.get("Notes", "")
+            })
 
-    # Step 5: Final row output
-    return {
-        "Company Name": result_json.get("Company Name", ""),
-        "Project": result_json.get("Project", ""),
-        "Year Quoted": result_json.get("Year Quoted", ""),
-        "Wage Type": wage_type_info or "None",
-        "Unit Price ($/Hr)": formatted_unit_price_block.strip(),
-        "Notes": result_json.get("Notes", "")
-    }
+    return output_rows
 
 def process_rebar_pdf(pdf_path: str) -> dict:
     RAG = index_pdf(pdf_path)
