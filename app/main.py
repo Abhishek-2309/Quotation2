@@ -147,19 +147,28 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         {wage_clauses}
         """
     else:
-        wage_context = "In the below JSON Schema, Write the wage type as 'None' and fill the rest of the details as specified"
+        wage_context = "There is no wage type, therefore in place of <Wage Type>, write ONLY 'None'. and fill the rest of the details as specified"
 
     # Unit Price Extraction
     final_unit_price_prompt = f"""
-    Extract the Unit Price ($/Hr) for the security guard from the provided document.
+    Extract the Unit Price ($/Hr) without fail for the security guard from the provided image and stricttly fill up the JSON schema as per the following definitions:
+    First, fill down the <Wage Type> based on the information below:
+    {wage_context}
+    Next, Identify the type/description of the security guard in place of <Type of Security Guard> only if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
+    - The type/description should be verbatim from the image. If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
+    - If no specific type is found, write the closest description from the image instead.
+    
+    Next, identify the Unit Price ($/Hr) from the image. It can also be referred as Total Billing Rate/Total Guard Rata/Hourly Guard rate.
     - The *Unit Price* refers specifically to the hourly wage or billing rate of a security guard. It should be identified only in terms of $ per hr. 
     - The *Unit Price* is the total bill rate or the total guard rate after all taxes and benefits are considered. 
     - If multiple rates are given (e.g., base rate + additional/supplementary charges), compute the final effective hourly wage as the unit price.
-    - Rates such as Overtime, Holiday, or Weekend rates are to be categorized under Additional rates.
-    - *Additional rates* are separate from unit price/billing rate and should be listed separately. If detected, mention their accurate value as specified in the image.
-    - If the Image contains multiple types/description of guard services with different rates, identify them as a Security guard type(Eg: Armed/Unarmed/Level 1)
-    {wage_context}
-    - 
+    - Unit Price is not to be confused with Overtime or Holiday rates.
+    
+    Next, Identify if any Additional Rates are present.
+    - Additional rates are separate from unit price/billing rate and should be listed separately. 
+    - Additional rates can refer to - *Overtime* rate, *Holiday rate*, *Weekend rate*, if any such rate is present, find their value and write under Additional rates.
+
+    The JSON schema below is to be strictly followed:
     Format:
     {{
       "Unit Price ($/Hr)": {{
