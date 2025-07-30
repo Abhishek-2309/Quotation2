@@ -63,12 +63,12 @@ firewall_queries = [
     Do NOT return the year of founding, experience, or any certification expiry year. 
     Only return the year associated with the quotation document itself. 
     If not explicitly stated, leave it blank, return in json with key as: 'Year Quoted' """},
-    {"key": "Total Length(LF)", "question": "Find the total length in feet(LF) of the firewall provided based on document, return in json with the key as 'Total Length(LF)"},
-    {"key": "Average Height (LF)", "question": "Find the average height(Length in feet) of the firewall system provided, return in json with the key as 'Average Height (LF)"},
-    {"key": "Total SF", "question": "Find the Total Square feet of the firewall in terms of sq.ft/sf for which the firewall service is provided, return in json with the key as 'Total SF"},
-    {"key": "Total Price", "question": "Find the Total Price of the firewall as mentioned in the document, return in json with the key as 'Total Price"},
-    {"key": "Average Unit Price ($/SF)", "question": "Find the average unit price for the firewall service provided in the document which can also be computed by dividing the total price and total sf, return in json with the key as 'Average Unit Price ($/SF)"},
-    {"key": "Width Range (in)", "question": "Find the width range in inches of the firewall, return in json with the key as 'Width Range (in)'"},
+    {"key": "Total Length(LF)", "question": "What is the total linear footage (in LF) of the firewall? Look for summed wall segment lengths or configuration tables. If only panel lengths and quantities are given, check if you can calculate: sum of (panel length × quantity). If provided, check drawings for dimension strings indicating wall run lengths."},
+    {"key": "Average Height (LF)", "question": "What is the average height (in feet) of the firewall across all sections? Search for height values in panel dimension formats (L×H×T where H is second), design notes, or wall specs. Use the most common or weighted average if multiple heights are given. Section views and technical notes may also specify vertical dimensions."},
+    {"key": "Total SF", "question": "What is the total square footage of the firewall? Look for surface area calculations, pricing tables, or summaries. If unavailable, compute using panel dimensions and quantities: (Length × Height × Quantity), or approximate as (Total Length × Average Height). Ensure the result reflects full firewall coverage."},
+    {"key": "Total Price", "question": "Find the total cost of the firewall system only. Look for subtotal, lump sum, or extended price in quotations. Return as a number without currency symbols or commas."},
+    {"key": "Average Unit Price ($/SF)", "question": "What is the average unit cost per square foot of the firewall? Look for $/SF entries or unit pricing in tables. If not directly shown, compute as (Total Price ÷ Total SF). Match the pricing with wall or section IDs to confirm relevance."},
+    {"key": "Width Range (in)", "question": "What is the thickness or width range (in inches) of the firewall panels? Look for panel specifications in drawings or text, especially in formats like L×H×T where thickness is the third value, or in callouts like ‘6” THK’. Focus on assumptions, technical specs, or panel dimension listings."},
     {"key": "Hr-Rating", "question": "Find the Hr-Rating of the firewall which is the fire-resistance rating that indicates the duration, in hours, that the wall can withstand a standard fire test, return in json with the key as 'Hr-Rating"},
     
 ]
