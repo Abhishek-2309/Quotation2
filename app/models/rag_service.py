@@ -6,7 +6,7 @@ import os
 def index_pdf(path: str):
     print("Indexing folder:", path)
     print("Files in folder:", os.listdir(path))
-
+    
     # Clear any previous index in memory
     RAG = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=0)
     
@@ -20,8 +20,8 @@ def index_pdf(path: str):
     return RAG
 
 def search_image(RAG, question: str):
-    print(question)
     results = RAG.search(question, k=1)
+    print(results)
     if not results or not results[0].base64:
         raise ValueError("No image found for the question.")
     image_bytes = base64.b64decode(results[0].base64)
