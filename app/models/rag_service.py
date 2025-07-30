@@ -1,8 +1,12 @@
 from byaldi import RAGMultiModalModel
 import base64, io
 from PIL import Image
+import os
 
 def index_pdf(path: str):
+    print("Indexing folder:", path)
+    print("Files in folder:", os.listdir(path))
+
     # Clear any previous index in memory
     RAG = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=0)
     
