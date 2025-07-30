@@ -32,10 +32,12 @@ Security_Service_queries = [
 rebar_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Rebar Providing service, return in json with the key as 'Company Name' "},
     {"key": "Epoxy Coated (Y/N)", "question": "Find whether rebar is epoxy coated or not(uncoated), return in json with the key as 'Epoxy Coated (Y/N)' and value as either Y/N"},
-    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnist or install or do both for rebar, return in json with key as: 'Scope Of Service'"},
+    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnish or install or do both for rebar, return in json with key as: 'Scope Of Service'. Return either/both 'furnish' and 'install'"},
     {"key": "Average Unit Price ($/lb)", "question": """
-    Find out the average unit price of installing the rebar in $/lb as mentioned in the document, 
-    Mention all the rebar types in the document and their price, write in terms of $/lb only, if not given explicitly, compute based on price and weights, return in json with key as: 'Average Unit Price ($/lb)'
+    Find out the average unit price of installing the rebar in $/lb aka dollars per pounds as mentioned in the document, 
+    Mention all the rebar types in the document and their price, write in terms of $/lb only, 
+    If rebar weights are mentioned in terms of different units other than pounds, convert them to pounds and compute in terms of dollars per pound and give final value
+    If given separately say, total amount, return in json with key as: 'Average Unit Price ($/lb)'
     Finally give output as {
               "Average Unit Price ($/lb)": {
                 "<Rebar Type 1>": <price_1>,
@@ -154,7 +156,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     Extract the Unit Price ($/Hr) without fail for the security guard from the provided image and stricttly fill up the JSON schema as per the following definitions:
     
     Identify the Unit Price ($/Hr) from the image. It can also be referred as Total Billing Rate/Total Guard Rata/Hourly Guard rate.
-    - The *Unit Price* refers specifically to the hourly wage or billing rate of a security guard. It should be identified only in terms of $ per hr. 
+    - The *Unit Price* refers specifically to the *Total* hourly wage or billing rate of a security guard. It should be identified only in terms of $ per hr. 
     - The *Unit Price* is the total bill rate or the total guard rate after all taxes and benefits are considered. 
     - If multiple rates are given (e.g., base rate + additional/supplementary charges), compute the final effective hourly wage as the unit price.
     - Unit Price is not to be confused with Overtime or Holiday rates.
