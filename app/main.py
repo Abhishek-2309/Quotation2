@@ -166,7 +166,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     - The type/description should be verbatim from the image. If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
     - If no specific type is found, write the closest description from the image instead.
     
-    Importantlu, Identify if any Additional Rates are present.
+    Importantly, Identify if any Additional Rates are present.
     - Additional rates are separate from unit price/billing rate and should be listed separately. 
     - Additional rates can refer to - *Overtime* rate, *Holiday rate*, *Weekend rate*, if any such rate is present, find their value and write under Additional rates.
     - If overtime rates are mentioned in terms of billing rate/unit price, calculate and add its value.
@@ -290,9 +290,11 @@ def process_firewall_pdf(pdf_path: str) -> dict:
     result_json = {}
 
     for q in firewall_queries:
+        print(q)
         try:
             image = search_image(RAG, q["question"])
             result_text = run_answer(model, tokenizer, q["question"], image)
+            print(result_text)
             extracted = extract_json(result_text)
             if isinstance(extracted, dict) and q["key"] in extracted:
                 val = extracted[q["key"]]
