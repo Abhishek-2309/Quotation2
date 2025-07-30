@@ -287,8 +287,9 @@ def process_rebar_pdf(pdf_path: str) -> dict:
 
 def process_firewall_pdf(pdf_path: str) -> dict:
     RAG = index_pdf(pdf_path)
+    print("FIREWALL RAG GENERATED")
     result_json = {}
-
+    print(firewall_queries)
     for q in firewall_queries:
         print(q)
         try:
