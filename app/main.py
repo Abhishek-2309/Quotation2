@@ -23,7 +23,7 @@ Security_Service_queries = [
     Provide the project for which the construction company would require security or guard services or where they are assigned.
     If No close matches are found, leave it blank.
     Output should be in JSON format with the key as 'Project'. """},
-    {"key": "Wage Type", "question": ""Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
+    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
