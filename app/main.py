@@ -133,7 +133,8 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
             result_json[q["key"]] = f"Error: {str(e)}"
 
     # Wage Type Handling
-    wage_type_info = result_json.get("Wage Type", "").strip()
+    wage_type_info = result_json.get("Wage Type", "")
+    wage_type_info = wage_type_info.strip() if isinstance(wage_type_info, str) else ""
     wage_types = []
     if wage_type_info:
         if "/" in wage_type_info:
@@ -166,10 +167,10 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     Now fill up the JSON schema as follows:
     First, in place of <Wage Type>:
     {wage_context}
+    If wage type is not found in the document, write "None" instead of <Wage Type>. Replace <Wage Type> with the correct value, do not leave as "<Wage Type>". The same applies for <Type of Security Guard>.
     Next, Identify the type/description of the security guard in place of <Type of Security Guard> if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
     - If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
-    - If no specific type is found, write the closest description from the image instead.
-    - Do *NOT* simply write <Type of Security Guard>, write a description of the guard instead.
+    - If no specific type is found, simply replace <Type of Security Guard> with 'Security Guard'
     
     Importantly, Identify if any Additional Rates are present.
     - Additional rates are separate from unit price/billing rate and should be listed separately. They are usually mentioned nearby the unit price and have higher rates than the unit price.
