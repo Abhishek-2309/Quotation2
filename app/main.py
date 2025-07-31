@@ -18,16 +18,15 @@ model, tokenizer = load_model()
 Security_Service_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": """Identify the name of the project for which the security service or the guard is being provided. 
-    Do not confuse this with 'Bond Civil & Utility Construction' who are the company conducting this project. 
-    Provide the project for which the construction company would require security or guard services.
+    Do not return 'Bond Civil & Utility Construction' or any variations of it as it is the company conducting this project. 
+    Provide the project for which the construction company would require security or guard services or where they are assigned.
     If No close matches are found, leave it blank.
     Output should be in JSON format with the key as 'Project'. """},
-    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned, leave empty, return in json with key as: 'Wage Type'"},
+    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, return 'Prevailing/Non-Prevailing', if neither are mentioned, leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
-    Only return the year associated with the quotation document itself. 
-    If not explicitly stated, leave it blank, return in json with key as: 'Year Quoted'"""}
+    Only return the year associated with the quotation document itself, return in json with key as: 'Year Quoted'"""}
 ]
 
 rebar_queries = [
@@ -57,7 +56,7 @@ rebar_queries = [
     
 ]
 
-firewall_queries = [
+firewall_queries_2 = [
     {"key": "Company Name", "question": "Find the Company Name of the Firewall Providing service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "You are a document reader for Bond Civil & Utility Construction, Find the name of the Project for which the company requires the firewall service, return in json with the key as 'Project"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
@@ -72,8 +71,51 @@ firewall_queries = [
     {"key": "Average Unit Price ($/SF)", "question": "What is the average unit cost per square foot of the firewall? Look for $/SF entries or unit pricing in tables. If not directly shown, compute as (Total Price ÷ Total SF). Return a single value obtained after the extraction/calculation in json with key as 'Average Unit Price ($/SF)' "},
     {"key": "Width Range (in)", "question": "What is the thickness or width range (in inches) of the firewall panels? Look for panel specifications in drawings or text, especially in formats like L×H×T where thickness is the third value, or in callouts like ‘6” THK’. If not explicitly clear, give a single best estimate. Return a single value obtained after the estimation in json with key as 'Width Range (in)'"},
     {"key": "Hr-Rating", "question": "Find the Hr-Rating of the firewall which is the fire-resistance rating that indicates the duration, in hours, that the wall can withstand a standard fire test, return in json with the key as 'Hr-Rating"},
-    
 ]
+
+firewall_queries = [
+    {
+        "key": "Company Name",
+        "question": "Identify the name of the company that is offering or proposing the firewall system. Look for it in the cover page, letterhead, or signature section. Return in JSON with key: 'Company Name'."
+    },
+    {
+        "key": "Project",
+        "question": "Find the name or title of the project for which the firewall system is being quoted or proposed. Search in headers, subject lines, or job descriptions. Return in JSON with key: 'Project'."
+    },
+    {
+        "key": "Year Quoted",
+        "question": "What is the year in which this quotation or proposal was issued or submitted? Look near date fields in cover letter, proposal header, or signature section. Avoid using experience, license expiry, or founding years. Return in JSON with key: 'Year Quoted'."
+    },
+    {
+        "key": "Total Length(LF)",
+        "question": "Find the total linear footage (in LF) of all firewall segments combined. Look for tables, wall configuration summaries, or individual panel lengths and quantities to compute total length. Return a single number in JSON with key: 'Total Length(LF)'."
+    },
+    {
+        "key": "Average Height (LF)",
+        "question": "Find the average height (in feet) of the firewall. If multiple heights are listed, compute the weighted or simple average. Look in panel specifications or wall descriptions (e.g., 20' height, 12’H). Return a single number in JSON with key: 'Average Height (LF)'."
+    },
+    {
+        "key": "Total SF",
+        "question": "What is the total surface area of the firewall, in square feet? Look in summary tables or calculations showing 'Square Feet', 'Sq.Ft.', or 'SF'. If not found directly, this will be calculated later. Return a single number in JSON with key: 'Total SF'."
+    },
+    {
+        "key": "Total Price",
+        "question": "Find the total cost or lump sum for the entire firewall system only. Ignore taxes, extras, or unrelated costs. Look in final pricing tables, subtotal summaries, or proposal totals. Return as a number without $ or commas in JSON with key: 'Total Price'."
+    },
+    {
+        "key": "Average Unit Price ($/SF)",
+        "question": "Find the average unit price of the firewall system, expressed in dollars per square foot ($/SF). If this is not explicitly shown, it will be calculated later. Return a single number in JSON with key: 'Average Unit Price ($/SF)'."
+    },
+    {
+        "key": "Width Range (in)",
+        "question": "Find the thickness or width of the firewall panels in inches. Look for dimensions like 6” THK, 8” width, or panel spec formats like L×H×T (T = thickness). Return a single value or best estimate in JSON with key: 'Width Range (in)'."
+    },
+    {
+        "key": "Hr-Rating",
+        "question": "What is the fire-resistance rating of the firewall? Look for phrases like '2-hour fire rated', '4 Hr Rating', or ‘UL 1 Hr wall’. Return the value (e.g., 1, 2, 4) in hours in JSON with key: 'Hr-Rating'."
+    }
+]
+
 
 def strip_prompt_from_output(text: str) -> str:
     """
@@ -141,10 +183,10 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
             wage_types = [wt.strip() for wt in wage_type_info.split("/")]
         else:
             wage_types = [wage_type_info]
-
+    print(wage_type_info)
     if wage_types:
         wage_clauses = " ".join([
-            f'Return the entry for "{wt}" under key "{wt}" in the output JSON.'
+            f'Write wage type as "{wt}" in place of <Wage Type> in the output JSON and extract its details below.'
             for wt in wage_types
         ])
         wage_context = f"""
@@ -152,7 +194,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         {wage_clauses}
         """
     else:
-        wage_context = "Write *ONLY* 'None' in place of *<Wage Type>*. DO NOT WRITE ANYTHING ELSE, and fill the rest of the details as specified"
+        wage_context = "Write *ONLY* 'None' in place of <Wage Type>. DO NOT WRITE ANYTHING ELSE, and fill the rest of the details as specified"
 
     # Unit Price Extraction
     final_unit_price_prompt = f"""
@@ -165,19 +207,20 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     - Unit Price is not to be confused with Overtime or Holiday rates.
 
     Now fill up the JSON schema as follows:
-    First, in place of <Wage Type>:
+    Map the wage with the wage type based on below context, in place of <Wage Type>:
     {wage_context}
-    If wage type is not found in the document, write "None" instead of <Wage Type>. Replace <Wage Type> with the correct value, do not leave as "<Wage Type>". The same applies for <Type of Security Guard>.
+    If wage type is not found in the document, replace <Wage Type> with 'None'. Replace <Wage Type> with the correct value, do not return "<Wage Type>" in the final json.
+    
     Next, Identify the type/description of the security guard in place of <Type of Security Guard> if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
-    - If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
-    - If no specific type is found, simply replace <Type of Security Guard> with 'Security Guard'
+    - Some common descriptions mentioned alongside are Armed/Unarmed/With Vehicle etc. If descriptions like these are present, add them in place of <Type of Security Guard>.
+    - If no specific type is found, replace <Type of Security Guard> with 'Security Guard'
     
     Importantly, Identify if any Additional Rates are present.
     - Additional rates are separate from unit price/billing rate and should be listed separately. They are usually mentioned nearby the unit price and have higher rates than the unit price.
     - Additional rates can refer to - *Overtime* rate, *Holiday rate*, *Weekend rate*, if any such rate is present, find their value and write under Additional rates.
-    - If overtime rates are mentioned in terms of billing rate/unit price, calculate and add its value.
+    - If overtime rates are mentioned in terms of billing rate/unit price such as 'one and a half or two times billing rate', calculate and add its value.
 
-    The JSON schema below is to be strictly followed:
+    The JSON schema below is to be strictly followed. Return a json like this replacing the placeholders with actual values:
     Format:
     {{
       "Unit Price ($/Hr)": {{
@@ -198,11 +241,11 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         image = search_image(RAG, final_unit_price_prompt)
         result_text = run_answer(model, tokenizer, final_unit_price_prompt, image)
         extracted = extract_json(result_text)
-        print(extracted)
         result_json["Unit Price ($/Hr)"] = extracted.get("Unit Price ($/Hr)", {})
     except Exception as e:
         result_json["Unit Price ($/Hr)"] = f"Error: {str(e)}"
     # Final Flattened Output: One row per guard type
+    print(result_json)
     unit_price_data = result_json.get("Unit Price ($/Hr)", {})
     if not isinstance(unit_price_data, dict):
         return [{
@@ -293,6 +336,7 @@ def process_rebar_pdf(pdf_path: str) -> dict:
 
     return result_lst
 
+"""
 def process_firewall_pdf(pdf_path: str) -> dict:
     RAG = index_pdf(pdf_path)
     result_json = {}
@@ -316,8 +360,75 @@ def process_firewall_pdf(pdf_path: str) -> dict:
             result_json[q["key"]] = f"Error: {str(e)}"
     
     return [result_json]
+"""
 
+def process_firewall_pdf(pdf_path: str) -> dict:
+    RAG = index_pdf(pdf_path)
+    result_json = {}
+    intermediate = {}
 
+    def query_field(query_obj):
+        try:
+            image = search_image(RAG, query_obj["question"])
+            result_text = run_answer(model, tokenizer, query_obj["question"], image)
+            extracted = extract_json(result_text)
+            if isinstance(extracted, dict) and query_obj["key"] in extracted:
+                return extracted[query_obj["key"]]
+            return extracted
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    # Phase 1: Extract direct fields
+    direct_keys = [
+        "Company Name", "Project", "Year Quoted", "Total Price", "Total SF",
+        "Average Unit Price ($/SF)", "Total Length(LF)", "Average Height (LF)",
+        "Width Range (in)", "Hr-Rating"
+    ]
+
+    for q in firewall_queries:
+        key = q["key"]
+        if key in direct_keys:
+            val = query_field(q)
+            intermediate[key] = val
+
+    # Phase 2: Smart resolution
+    # ---- Total SF fallback ----
+    if not is_valid(intermediate.get("Total SF")):
+        try:
+            length = float(intermediate.get("Total Length(LF)", 0))
+            height = float(intermediate.get("Average Height (LF)", 0))
+            if length and height:
+                intermediate["Total SF"] = round(length * height, 2)
+        except:
+            pass
+
+    # ---- Total Length / Height fallback ----
+    if not is_valid(intermediate.get("Total Length(LF)")) or not is_valid(intermediate.get("Average Height (LF)")):
+        try:
+            total_sf = float(intermediate.get("Total SF", 0))
+            known_length = float(intermediate.get("Total Length(LF)", 0) or 0)
+            known_height = float(intermediate.get("Average Height (LF)", 0) or 0)
+
+            if not known_length and known_height:
+                intermediate["Total Length(LF)"] = round(total_sf / known_height, 2)
+            elif not known_height and known_length:
+                intermediate["Average Height (LF)"] = round(total_sf / known_length, 2)
+        except:
+            pass
+
+    # ---- Unit Price fallback ----
+    if not is_valid(intermediate.get("Average Unit Price ($/SF)")):
+        try:
+            total_price = float(clean_numeric(intermediate.get("Total Price", 0)))
+            total_sf = float(intermediate.get("Total SF", 0))
+            if total_price and total_sf:
+                intermediate["Average Unit Price ($/SF)"] = round(total_price / total_sf, 2)
+        except:
+            pass
+
+    # Final JSON Output
+    result_json = {key: intermediate.get(key, "") for key in direct_keys}
+    return [result_json]
 
 
 
