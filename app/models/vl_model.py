@@ -13,10 +13,10 @@ def load_model():
 def run_answer(model, tokenizer, question: str, image):
     prompt = f"""Answer the question based on the following image. Give your final answer strictly in a json schema with the same key asked in question.
 Question: {question}"""
-
     messages = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": prompt}]}]
     input_text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
     inputs = tokenizer(image, input_text, add_special_tokens=False, return_tensors="pt").to("cuda")
-    outputs = model.generate(**inputs, max_new_tokens=512, use_cache=True)
+    with torch.inference_mode():
+        outputs = model.generate(**inputs, max_new_tokens=512, use_cache=True)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
