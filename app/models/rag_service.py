@@ -1,8 +1,8 @@
 from byaldi import RAGMultiModalModel
 import base64, io
 from PIL import Image
-import os
-"""
+#import os
+
 def index_pdf(path: str):
     print("Indexing folder:", path)
     #print("Files in folder:", os.listdir(path))
@@ -38,7 +38,7 @@ def index_pdf(path: str):
         overwrite=True
     )
     return RAG
-
+"""
 def search_image(RAG, question: str):
     results = RAG.search(question, k=1)
     print(results)
