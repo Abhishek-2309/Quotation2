@@ -1,17 +1,18 @@
-from fastapi import FastAPI, UploadFile, File, APIRouter, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
+#from fastapi import FastAPI, UploadFile, File, APIRouter, HTTPException
+#from fastapi.responses import JSONResponse, FileResponse
 from models.rag_service import index_pdf, search_image
-import csv
+#import csv
 import tempfile
 from models.vl_model import load_model, run_answer
 import tempfile, os, shutil
 import re
 import json
-from fastapi import Query
+#from fastapi import Query
 from typing import List
 
-
+"""
 app = FastAPI()
+"""
 
 model, tokenizer = load_model()
 
@@ -449,7 +450,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
 
 
 #endpoints
-
+"""
 @app.post("/extract")
 async def extract_from_document(file: UploadFile = File(...)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
@@ -556,3 +557,4 @@ async def upload_and_process_folder(zip_file: UploadFile = File(...)):
             writer.writerow(row)
 
     return FileResponse(csv_path, filename="extracted_results.csv", media_type="text/csv")
+"""
