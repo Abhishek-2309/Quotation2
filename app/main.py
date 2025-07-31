@@ -373,6 +373,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
             image = search_image(RAG, query_obj["question"])
             result_text = run_answer(model, tokenizer, query_obj["question"], image)
             extracted = extract_json(result_text)
+            print(extracted)
             if isinstance(extracted, dict) and query_obj["key"] in extracted:
                 return extracted[query_obj["key"]]
             return extracted
