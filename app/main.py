@@ -23,7 +23,7 @@ Security_Service_queries = [
     Provide the project for which the construction company would require security or guard services or where they are assigned.
     If No close matches are found, leave it blank.
     Output should be in JSON format with the key as 'Project'. """},
-    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, return 'Prevailing/Non-Prevailing', if neither are mentioned, leave empty, return in json with key as: 'Wage Type'"},
+    {"key": "Wage Type", "question": "Check whether the image explicitly mentions the security guard type as 'Prevailing', 'Non-Prevailing' or both. Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. If both are mentioned, return 'Prevailing/Non-Prevailing', if neither are mentioned, leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
@@ -177,6 +177,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
 
     # Wage Type Handling
     wage_type_info = result_json.get("Wage Type", "")
+    print(wage_type_info)
     wage_type_info = wage_type_info.strip() if isinstance(wage_type_info, str) else ""
     wage_types = []
     if wage_type_info:
@@ -212,8 +213,8 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     {wage_context}
     If wage type is not found in the document, replace <Wage Type> with 'None'. Replace <Wage Type> with the correct value, do not return "<Wage Type>" in the final json.
     
-    Next, Identify the type/description of the security guard in place of <Type of Security Guard> if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
-    - Some common descriptions mentioned alongside are Armed/Unarmed/With Vehicle etc. If descriptions like these are present, add them in place of <Type of Security Guard>.
+    Next, Identify the type/description of the security guard in place of <Type of Security Guard> , if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
+    - Types can be replaced by - Armed/Unarmed/With Vehicle/Level 1 etc. If descriptions like these are present, add them in place of <Type of Security Guard>.
     - If no specific type is found, replace <Type of Security Guard> with 'Security Guard'
     
     Importantly, Identify if any Additional Rates are present.
