@@ -32,7 +32,7 @@ Security_Service_queries = [
 rebar_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Rebar Providing service, return in json with the key as 'Company Name' "},
     {"key": "Epoxy Coated (Y/N)", "question": "Find whether rebar is epoxy coated or not(uncoated), return in json with the key as 'Epoxy Coated (Y/N)' and value as either Y/N"},
-    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnish or install or do both for rebar, return in json with key as: 'Scope Of Service'. Return either/both 'furnish' and 'install'"},
+    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnish or install or do both for rebar, return in json with key as: 'Scope Of Service'. Return a string: furnish (or) install (or) furnish & install"},
     {"key": "Average Unit Price ($/lb)", "question": """
     Find out the average unit price of installing the rebar in $/lb aka dollars per pounds as mentioned in the document, 
     Mention all the rebar types in the document and their price, write in terms of $/lb only, 
