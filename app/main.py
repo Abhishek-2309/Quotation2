@@ -31,8 +31,8 @@ Security_Service_queries = [
 
 rebar_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Rebar Providing service, return in json with the key as 'Company Name' "},
-    {"key": "Epoxy Coated (Y/N)", "question": "Find whether rebar is epoxy coated or not(uncoated), return in json with the key as 'Epoxy Coated (Y/N)' and value as either Y/N"},
-    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnish or install or do both for rebar, return in json with key as: 'Scope Of Service'. Return a string: furnish (or) install (or) furnish & install"},
+    {"key": "Epoxy Coated (Y/N)", "question": "Find whether rebar is epoxy coated or not. If the image has mentions of 'Uncoated' or 'Un-coated' bars it is not epoxy quoted, return in json with the key as 'Epoxy Coated (Y/N)' and value as either Y/N"},
+    {"key": "Scope Of Service", "question": "Find out the scope of service mentioned in the document, whether the company is willing to furnish or install or do both for rebar. An installation service is indicated with explicit mentions of *Furnish* or *Install* by the company, return in json with key as: 'Scope Of Service'. Return a string of either: 'furnish' (or) 'install' (or) 'furnish & install'"},
     {"key": "Average Unit Price ($/lb)", "question": """
     Find out the average unit price of installing the rebar in $/lb aka dollars per pounds as mentioned in the document, 
     Mention all the rebar types in the document and their price, write in terms of $/lb only, 
@@ -150,7 +150,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         {wage_clauses}
         """
     else:
-        wage_context = "There is no wage type, therefore in the JSON schema write *only* 'None' in place of *<Wage Type>*. and fill the rest of the details as specified"
+        wage_context = "Write *ONLY* 'None' in place of *<Wage Type>*. DO NOT WRITE ANYTHING ELSE, and fill the rest of the details as specified"
 
     # Unit Price Extraction
     final_unit_price_prompt = f"""
@@ -163,11 +163,12 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     - Unit Price is not to be confused with Overtime or Holiday rates.
 
     Now fill up the JSON schema as follows:
-    First, fill down the <Wage Type> based on the information below:
+    First, in place of <Wage Type>:
     {wage_context}
     Next, Identify the type/description of the security guard in place of <Type of Security Guard> if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
     - If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
     - If no specific type is found, write the closest description from the image instead.
+    - Do *NOT* simply write <Type of Security Guard>, write a description of the guard instead.
     
     Importantly, Identify if any Additional Rates are present.
     - Additional rates are separate from unit price/billing rate and should be listed separately. They are usually mentioned nearby the unit price and have higher rates than the unit price.
