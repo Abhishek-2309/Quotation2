@@ -150,8 +150,8 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
         {wage_clauses}
         """
     else:
-        wage_context = "There is no wage type, therefore in the JSON schema write 'None' in place of *<Wage Type>*. and fill the rest of the details as specified"
-'
+        wage_context = "There is no wage type, therefore in the JSON schema write *only* 'None' in place of *<Wage Type>*. and fill the rest of the details as specified"
+
     # Unit Price Extraction
     final_unit_price_prompt = f"""
     Extract the Unit Price ($/Hr) without fail for the security guard from the provided image and stricttly fill up the JSON schema as per the following definitions:
