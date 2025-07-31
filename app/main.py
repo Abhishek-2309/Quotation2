@@ -392,7 +392,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
         if key in direct_keys:
             val = query_field(q)
             intermediate[key] = val
-
+    print(intermediate)
     # Phase 2: Smart resolution
     # ---- Total SF fallback ----
     if not is_valid(intermediate.get("Total SF")):
@@ -403,7 +403,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
                 intermediate["Total SF"] = round(length * height, 2)
         except:
             pass
-
+    print(intermediate)
     # ---- Total Length / Height fallback ----
     if not is_valid(intermediate.get("Total Length(LF)")) or not is_valid(intermediate.get("Average Height (LF)")):
         try:
@@ -417,7 +417,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
                 intermediate["Average Height (LF)"] = round(total_sf / known_length, 2)
         except:
             pass
-
+    print(intermediate)
     # ---- Unit Price fallback ----
     if not is_valid(intermediate.get("Average Unit Price ($/SF)")):
         try:
@@ -427,10 +427,9 @@ def process_firewall_pdf(pdf_path: str) -> dict:
                 intermediate["Average Unit Price ($/SF)"] = round(total_price / total_sf, 2)
         except:
             pass
-
+    print(result_json)
     # Final JSON Output
     result_json = {key: intermediate.get(key, "") for key in direct_keys}
-    print(result_json)
     return [result_json]
 
 
