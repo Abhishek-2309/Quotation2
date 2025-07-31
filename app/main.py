@@ -37,6 +37,7 @@ rebar_queries = [
     Find out the average unit price of installing the rebar in $/lb aka dollars per pounds as mentioned in the document, 
     Mention all the rebar types in the document and their price, write in terms of $/lb only, 
     If rebar weights are mentioned in terms of different units other than pounds, convert them to pounds and compute in terms of dollars per pound and give final value
+    Write <price_1> in the format of '$ + <unit price value> + '/' + 'lb'
     If given separately say, total amount, return in json with key as: 'Average Unit Price ($/lb)'
     Finally give output as {
               "Average Unit Price ($/lb)": {
