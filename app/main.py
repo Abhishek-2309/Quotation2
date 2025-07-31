@@ -429,6 +429,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
 
     # Final JSON Output
     result_json = {key: intermediate.get(key, "") for key in direct_keys}
+    print(result_json)
     return [result_json]
 
 
