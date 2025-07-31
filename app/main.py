@@ -17,7 +17,7 @@ model, tokenizer = load_model()
 
 Security_Service_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
-    {"key": "Project", "question": """Identify the name of the project for which the security service or the guard is being provided. Do not confuse this with the name of the company receiving the service. 
+    {"key": "Project", "question": """Identify the name of the project for which the security service or the guard is being provided. Do not confuse this with 'Bond Civil & Utility Construction' who are the company conducting this project. 
     The Project name may appear in the subject or the body of the letter addressed to the receiver/Document header and more
     It is the project for which the construction company would require security or guard services.
     Output should be in JSON format with the key as 'Project'. """},
@@ -47,7 +47,7 @@ rebar_queries = [
               }
             } in json"""},
 
-    {"key": "Project", "question": "Find out the name of the project for which the rebar is provided for, with key as 'Project'"},
+    {"key": "Project", "question": "You are a document reader for Bond Civil & Utility Construction, Find out the name of the project for which the rebar is provided for, with key as 'Project'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
@@ -58,7 +58,7 @@ rebar_queries = [
 
 firewall_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Firewall Providing service, return in json with the key as 'Company Name' "},
-    {"key": "Project", "question": "Find the name of the Project for which the firewall service is provided, return in json with the key as 'Project"},
+    {"key": "Project", "question": "You are a document reader for Bond Civil & Utility Construction, Find the name of the Project for which the company requires the firewall service, return in json with the key as 'Project"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
@@ -156,7 +156,7 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     final_unit_price_prompt = f"""
     Extract the Unit Price ($/Hr) without fail for the security guard from the provided image and stricttly fill up the JSON schema as per the following definitions:
     
-    Identify the Unit Price ($/Hr) from the image. It can also be referred as Total Billing Rate/Total Guard Rata/Hourly Guard rate.
+    Identify the Unit Price ($/Hr) from the image. It can also be referred as Total Billing Rate/Total Guard Rate/Total Hourly Guard rate/Total Bill Rate
     - The *Unit Price* refers specifically to the *Total* hourly wage or billing rate of a security guard. It should be identified only in terms of $ per hr. 
     - The *Unit Price* is the total bill rate or the total guard rate after all taxes and benefits are considered. 
     - If multiple rates are given (e.g., base rate + additional/supplementary charges), compute the final effective hourly wage as the unit price.
@@ -165,12 +165,12 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
     Now fill up the JSON schema as follows:
     First, fill down the <Wage Type> based on the information below:
     {wage_context}
-    Next, Identify the type/description of the security guard in place of <Type of Security Guard> only if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
-    - The type/description should be verbatim from the image. If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
+    Next, Identify the type/description of the security guard in place of <Type of Security Guard> if a distinct Unit Price/Billing Rate (defined below) is mentioned for the security guard.
+    - If multiple types are found, ensure they all have distinct rates. Eg: Armed/Unarmed/Level 1
     - If no specific type is found, write the closest description from the image instead.
     
     Importantly, Identify if any Additional Rates are present.
-    - Additional rates are separate from unit price/billing rate and should be listed separately. 
+    - Additional rates are separate from unit price/billing rate and should be listed separately. They are usually mentioned nearby the unit price and have higher rates than the unit price.
     - Additional rates can refer to - *Overtime* rate, *Holiday rate*, *Weekend rate*, if any such rate is present, find their value and write under Additional rates.
     - If overtime rates are mentioned in terms of billing rate/unit price, calculate and add its value.
 
@@ -182,7 +182,8 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
           "<Type of Security Guard>": {{
             "Unit Price ($/Hr)": "$<final hourly wage>",
             "Additional rates": {{
-              "<Overtime/Holiday/etc.>": "$<rate>"
+              "<Overtime rate.>": "$<rate>",
+              "<Holiday rate>": "$<rate>",
             }}
           }}
         }}
