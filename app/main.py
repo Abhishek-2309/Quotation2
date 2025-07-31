@@ -89,27 +89,27 @@ firewall_queries = [
     },
     {
         "key": "Total Length(LF)",
-        "question": "Find the total linear footage (in LF) of all firewall segments combined. Look for tables, wall configuration summaries, or individual panel lengths and quantities to compute total length. Return ONLY a single number with key(if not available return empty value) in JSON as: 'Total Length(LF)'."
+        "question": "Find the total linear footage (in LF) of all firewall segments combined. Look for tables, wall configuration summaries, or individual panel lengths and quantities to compute total length. Return ONLY a single number with key in JSON as: 'Total Length(LF)'."
     },
     {
         "key": "Average Height (LF)",
-        "question": "Find the average height (in feet) of the firewall. If multiple heights are listed, compute the weighted or simple average. Look in panel specifications or wall descriptions (e.g., 20' height, 12’H).  Return ONLY a single number with key(if not available return empty value) in JSON as: 'Average Height (LF)'."
+        "question": "Find the average height (in feet) of the firewall. If multiple heights are listed, compute the weighted or simple average. Look in panel specifications or wall descriptions (e.g., 20' height, 12’H).  Return ONLY a single number with key in JSON as: 'Average Height (LF)'."
     },
     {
         "key": "Total SF",
-        "question": "What is the total surface area of the firewall, in square feet? Look in summary tables or calculations showing 'Square Feet', 'Sq.Ft.', or 'SF'. If not found directly, this will be calculated later.  Return ONLY a single number with key(if not available return empty value) in JSON as: 'Total SF'."
+        "question": "What is the total surface area of the firewall, in square feet? Look in summary tables or calculations showing 'Square Feet', 'Sq.Ft.', or 'SF'. If not found directly, this will be calculated later.  Return ONLY a single number with key in JSON as: 'Total SF'."
     },
     {
         "key": "Total Price",
-        "question": "Find the total cost or lump sum for the entire firewall system only. Ignore taxes, extras, or unrelated costs. Look in final pricing tables, subtotal summaries, or proposal totals. Return as a number(if not available return empty value) without $ or commas in JSON with key: 'Total Price'."
+        "question": "Find the total cost or lump sum for the entire firewall system only. Ignore taxes, extras, or unrelated costs. Look in final pricing tables, subtotal summaries, or proposal totals. Return as a number without $ or commas in JSON with key: 'Total Price'."
     },
     {
         "key": "Average Unit Price ($/SF)",
-        "question": "Find the average unit price of the firewall system, expressed in dollars per square foot ($/SF). If this is not explicitly shown, it will be calculated later. Return a single number(if not available return empty value) in JSON with key: 'Average Unit Price ($/SF)'."
+        "question": "Find the average unit price of the firewall system, expressed in dollars per square foot ($/SF). If this is not explicitly shown, it will be calculated later. Return a single number in JSON with key: 'Average Unit Price ($/SF)'."
     },
     {
         "key": "Width Range (in)",
-        "question": "Find the thickness or width of the firewall panels in inches. Look for dimensions like 6” THK, 8” width, or panel spec formats like L×H×T (T = thickness). Return a single value or best estimate(if not available return empty value) in JSON with key: 'Width Range (in)'."
+        "question": "Find the thickness or width of the firewall panels in inches. Look for dimensions like 6” THK, 8” width, or panel spec formats like L×H×T (T = thickness). Return a single value or best estimate in JSON with key: 'Width Range (in)'."
     },
     {
         "key": "Hr-Rating",
