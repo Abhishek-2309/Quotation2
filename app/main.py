@@ -364,6 +364,23 @@ def process_firewall_pdf(pdf_path: str) -> dict:
     return [result_json]
 """
 
+def is_valid(value):
+    try:
+        if isinstance(value, str):
+            value = value.strip()
+            if value.lower().startswith("error") or value == "":
+                return False
+        float_val = float(value)
+        return float_val > 0
+    except:
+        return False
+
+def clean_numeric(value):
+    """Removes currency, commas, etc."""
+    if isinstance(value, str):
+        return value.replace('$', '').replace(',', '').strip()
+    return value
+
 def process_firewall_pdf(pdf_path: str) -> dict:
     RAG = index_pdf(pdf_path)
     result_json = {}
