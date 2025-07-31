@@ -57,7 +57,7 @@ rebar_queries = [
     
 ]
 
-firewall_queries_2 = [
+firewall_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Firewall Providing service, return in json with the key as 'Company Name' "},
     {"key": "Project", "question": "You are a document reader for Bond Civil & Utility Construction, Find the name of the Project for which the company requires the firewall service, return in json with the key as 'Project"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
@@ -74,7 +74,7 @@ firewall_queries_2 = [
     {"key": "Hr-Rating", "question": "Find the Hr-Rating of the firewall which is the fire-resistance rating that indicates the duration, in hours, that the wall can withstand a standard fire test, return in json with the key as 'Hr-Rating"},
 ]
 
-firewall_queries = [
+firewall_queries_2 = [
     {
         "key": "Company Name",
         "question": "Identify the name of the company that is offering or proposing the firewall system. Look for it in the cover page, letterhead, or signature section. Return in JSON with key: 'Company Name'."
