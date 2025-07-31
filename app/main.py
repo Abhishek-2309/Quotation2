@@ -93,7 +93,7 @@ firewall_queries = [
     },
     {
         "key": "Average Height (LF)",
-        "question": "Find the average height (in feet) of the firewall. If multiple heights are listed, compute the weighted or simple average. Look in panel specifications or wall descriptions (e.g., 20' height, 12’H).  Return ONLY a single number with key in JSON as: 'Average Height (LF)'."
+        "question": "Find the average height (in feet) of the firewall. If multiple heights are listed, compute the weighted or simple average. Look in panel specifications or wall descriptions (e.g., 20' height, 12’H).  Return ONLY a single value in json with key as: 'Average Height (LF)'."
     },
     {
         "key": "Total SF",
