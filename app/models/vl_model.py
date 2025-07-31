@@ -18,5 +18,8 @@ Question: {question}"""
     inputs = tokenizer(image, input_text, add_special_tokens=False, return_tensors="pt").to("cuda")
     with torch.inference_mode():
         outputs = model.generate(**inputs, max_new_tokens=512, use_cache=True)
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    del inputs, outputs
+    torch.cuda.empty_cache()
+    return decoded
 
