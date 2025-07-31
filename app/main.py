@@ -113,7 +113,7 @@ firewall_queries = [
     },
     {
         "key": "Hr-Rating",
-        "question": "What is the fire-resistance rating of the firewall? Look for phrases like '2-hour fire rated', '4 Hr Rating', or ‘UL 1 Hr wall’. Return the value (e.g., 1, 2, 4) in hours in JSON with key: 'Hr-Rating'."
+        "question": "Find the Hr-Rating of the firewall which is the fire-resistance rating that indicates the duration, in hours, that the wall can withstand a standard fire test, return in json with the key as 'Hr-Rating'."
     }
 ]
 
