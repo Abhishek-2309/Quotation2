@@ -295,7 +295,8 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
                 "Unit Price - Additional Rates": parse_additional_rates(data.get("Additional rates", {})),
                 "Notes": result_json.get("Notes", "")
             })
-
+    del RAG
+    torch.cuda.empty_cache() 
     return output_rows
 
 def process_rebar_pdf(pdf_path: str) -> dict:
@@ -334,7 +335,8 @@ def process_rebar_pdf(pdf_path: str) -> dict:
                     "Year Quoted": result_json.get("Year Quoted", ""),
                     "Notes": result_json.get("Notes", "")
                 })
-
+    del RAG
+    torch.cuda.empty_cache() 
     return result_lst
 
 """
@@ -431,6 +433,8 @@ def process_firewall_pdf(pdf_path: str) -> dict:
     # Final JSON Output
     result_json = {key: intermediate.get(key, "") for key in direct_keys}
     print(result_json)
+    del RAG
+    torch.cuda.empty_cache() 
     return [result_json]
 
 
