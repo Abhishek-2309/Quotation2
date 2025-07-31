@@ -2,7 +2,7 @@ from byaldi import RAGMultiModalModel
 import base64, io
 from PIL import Image
 import os
-
+"""
 def index_pdf(path: str):
     print("Indexing folder:", path)
     #print("Files in folder:", os.listdir(path))
@@ -13,6 +13,26 @@ def index_pdf(path: str):
     # Use a unique index name but since we clear before, can reuse the same name safely
     RAG.index(
         input_path=path,
+        index_name="session_index",
+        store_collection_with_index=True,
+        overwrite=True
+    )
+    return RAG
+"""
+def index_pdf(path: str):
+    if os.path.isdir(path):
+        print("Indexing folder:", path)
+        input_path = path
+    elif os.path.isfile(path):
+        print("Indexing single file:", path)
+        input_path = os.path.dirname(path)  # or process file directly if RAG supports it
+    else:
+        raise ValueError("Provided path is neither a file nor a folder")
+
+    RAG = RAGMultiModalModel.from_pretrained("vidore/colqwen2-v1.0", verbose=0)
+
+    RAG.index(
+        input_path=input_path,
         index_name="session_index",
         store_collection_with_index=True,
         overwrite=True
