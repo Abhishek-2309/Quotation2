@@ -17,11 +17,12 @@ model, tokenizer = load_model()
 
 Security_Service_queries = [
     {"key": "Company Name", "question": "Find the Company Name of the Security service, return in json with the key as 'Company Name' "},
-    {"key": "Project", "question": """Identify the name of the project for which the security service or the guard is being provided. Do not confuse this with 'Bond Civil & Utility Construction' who are the company conducting this project. 
-    The Project name may appear in the subject or the body of the letter addressed to the receiver/Document header and more
-    It is the project for which the construction company would require security or guard services.
+    {"key": "Project", "question": """Identify the name of the project for which the security service or the guard is being provided. 
+    Do not confuse this with 'Bond Civil & Utility Construction' who are the company conducting this project. 
+    Provide the project for which the construction company would require security or guard services.
+    If No close matches are found, leave it blank.
     Output should be in JSON format with the key as 'Project'. """},
-    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned explicitly leave empty, return in json with key as: 'Wage Type'"},
+    {"key": "Wage Type", "question": "Find the wage type of the guard as either 'Prevailing' or 'Non-Prevailing'. Check if either a prevailing or non-prevailing wage is mentioned within the document. If both are mentioned, write 'Prevailing/Non-Prevailing', if neither are mentioned, leave empty, return in json with key as: 'Wage Type'"},
     {"key": "Year Quoted", "question": """Find the year in which this quotation or proposal was submitted or issued. 
     This year should be mentioned in the date of issuance, letter, proposal header, or signature area. 
     Do NOT return the year of founding, experience, or any certification expiry year. 
@@ -37,7 +38,7 @@ rebar_queries = [
     Find out the average unit price of installing the rebar in $/lb aka dollars per pounds as mentioned in the document, 
     Mention all the rebar types in the document and their price, write in terms of $/lb only, 
     If rebar weights are mentioned in terms of different units other than pounds, convert them to pounds and compute in terms of dollars per pound and give final value
-    Write <price_1> in the format of '$ + <unit price value> + '/' + 'lb'
+    Write <price_1> in the format of '$ + <unit price value> + '/' + '<unit of weight>'
     If given separately say, total amount, return in json with key as: 'Average Unit Price ($/lb)'
     Finally give output as {
               "Average Unit Price ($/lb)": {
