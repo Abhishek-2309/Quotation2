@@ -237,14 +237,15 @@ def process_sec_pdf(pdf_path: str) -> list[dict]:
                     "Notes": result_json.get("Notes", "")
                 })
     else:
-        guard_entries = unit_price_data.get("None", unit_price_data)
+        guard_entries = (unit_price_data.get("None") or unit_price_data.get("<Wage Type>"))
         for guard_type, data in guard_entries.items():
+            guard_type_final = guard_type if guard_type not in [None, "<Type of Security Guard>"] else "Security Guard"
             output_rows.append({
                 "Company Name": result_json.get("Company Name", ""),
                 "Project": result_json.get("Project", ""),
                 "Year Quoted": result_json.get("Year Quoted", ""),
                 "Wage Type": "None",
-                "Unit Price - Type": guard_type,
+                "Unit Price - Type": guard_type_final,
                 "Unit Price - Rate": data.get("Unit Price ($/Hr)", ""),
                 "Unit Price - Additional Rates": parse_additional_rates(data.get("Additional rates", {})),
                 "Notes": result_json.get("Notes", "")
