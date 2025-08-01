@@ -502,10 +502,7 @@ def Process_Invoice(pdf_path: str) -> dict:
         except Exception as e:
             result_json[q["key"]] = f"Error: {str(e)}"
 
-    rebar = result_json.get("Average Unit Price ($/lb)", {})
-
-
-    return result_lst
+    return result_json
 
 
 
