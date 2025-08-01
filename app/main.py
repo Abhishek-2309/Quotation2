@@ -70,37 +70,52 @@ def clean_numeric(value):
 #--------------------------------INVOICE-----------------------------------------
 Invoice_queries = [
     {"key": "Invoice Number", "question": "Find the Invoice Number in the image. Return in json with the key as 'Invoice Number' "},
+    
     {"key": "Invoice Date", "question": "Find the Invoice Date in the image. Return in json with the key as 'Invoice Date' "},
+    
     {"key": "Buyer's Information", "question": """Identify the Buyer and extract the following buyer details:
     Name(either Buyer or Company), Address, Contact, GSTIN(GSTIN Number of Buyer's company)
     Output should be in JSON format with the key as 'Buyer's Information' and values as the above details. """},
+    
     {"key": "Seller's Information", "question": """Identify the Seller and extract the following seller details:
     Name(either seller or Company), Address, Contact, GSTIN(GSTIN Number of Seller's company)
     Output should be in JSON format with the key as 'Seller's Information' and values as the above details. """},
+    
     {"key": "Main Table", "question": """Identify the main line table from the image containing the line items of the Invoice document. This is the itemized list of products for which Invoice is performed
     Only add all the items present in that table. Do Not include totals and others.
+    Return in a strict JSON format only. The value of the main key should contain each row's fields and corresponding value for all the rows in the main table.
     Output should be in JSON format with the key as 'Items' and values as each row of fields and values """},
+    
     {"key": "Payment Terms", "question": """Identify the following Payment terms from the given image:
     Bank_details, consisting of: Bank_Name, IFSC_Code, Bank_account_no
     Payment Due Date,
     Payment Methods
     Output should be in JSON format with the key as 'Payment Terms' and values as the above details """},
+    
     {"key": "Summary", "question": """Identify The following summary details:
     Subtotal(Total amount of goods before taxes), Taxes, Discounts, Total_Amount_Due(Total amount due including Taxes)
     Output should be in JSON format with the key as 'Summary' and values as the above details. """},   
+    
     {"key": "Other_Important_Sections", "question": """Identify The following details:
     Terms and conditions, Notes/Comments, Signature.
     Output should be in JSON format with the key as 'Other_Important_Sections' and values as the above details. """},   
 ]
 
-def Process_Invoice(pdf_path: str) -> dict:
-    RAG = index_pdf(pdf_path)
+def Process_Invoice(path: str) -> dict:
+    is_pdf = False
+    if path.lower().endswith('pdf'):
+        is_pdf = True
+        RAG = index_pdf(path)
+        
     result_json = {}
 
     for q in Invoice_queries:
         try:
-            image = search_image(RAG, q["question"])
-            result_text = run_answer(model, tokenizer, q["question"], image)
+            if is_pdf:
+                image = search_image(RAG, q["question"])
+                result_text = run_answer(model, tokenizer, q["question"], image)
+            else:
+                result_text = run_answer(model, tokenizer, q["question"], path)
             extracted = extract_json(result_text)
             if isinstance(extracted, dict) and q["key"] in extracted:
                 val = extracted[q["key"]]
