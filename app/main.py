@@ -455,7 +455,7 @@ def process_firewall_pdf(pdf_path: str) -> dict:
 
 
 #--------------------------------INVOICE-----------------------------------------
-Security_Service_queries = [
+Invoice_queries = [
     {"key": "Invoice Number", "question": "Find the Invoice Number in the image. Return in json with the key as 'Invoice Number' "},
     {"key": "Invoice Date", "question": "Find the Invoice Date in the image. Return in json with the key as 'Invoice Date' "},
     {"key": "Buyer's Information", "question": """Identify the Buyer and extract the following buyer details:
