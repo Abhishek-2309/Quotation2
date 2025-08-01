@@ -1,6 +1,7 @@
 #from fastapi import FastAPI, UploadFile, File, APIRouter, HTTPException
 #from fastapi.responses import JSONResponse, FileResponse
 from models.rag_service import index_pdf, search_image
+from PIL import Image
 #import csv
 import tempfile
 from models.vl_model import load_model, run_answer
@@ -106,6 +107,8 @@ def Process_Invoice(path: str) -> dict:
     if path.lower().endswith('pdf'):
         is_pdf = True
         RAG = index_pdf(path)
+    else:
+        img = Image.open(path).convert("RGB")
         
     result_json = {}
 
@@ -115,7 +118,7 @@ def Process_Invoice(path: str) -> dict:
                 image = search_image(RAG, q["question"])
                 result_text = run_answer(model, tokenizer, q["question"], image)
             else:
-                result_text = run_answer(model, tokenizer, q["question"], path)
+                result_text = run_answer(model, tokenizer, q["question"], img)
             extracted = extract_json(result_text)
             if isinstance(extracted, dict) and q["key"] in extracted:
                 val = extracted[q["key"]]
