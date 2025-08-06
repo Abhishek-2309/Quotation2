@@ -464,9 +464,27 @@ Invoice_queries = [
     {"key": "Seller's Information", "question": """Identify the Seller and extract the following seller details:
     Name(either seller or Company), Address, Contact, GSTIN(GSTIN Number of Seller's company)
     Output should be in JSON format with the key as 'Seller's Information' and values as the above details. """},
-    {"key": "Main Table", "question": """Identify the main line table from the image containing the line items of the Invoice document. This is the itemized list of products for which Invoice is performed
-    Only add all the items present in that table. Do Not include totals and others.
-    Output should be in JSON format with the key as 'Items' and values as each row of fields and values """},
+    {"key": "Main Table", "question": """From the provided image of the invoice document, extract the **entire main line-item table** which lists individual products or services that are invoiced.
+Instructions:
+- Only extract the itemized list of products or services (do not include totals, subtotals or summary rows).
+- Each row must include all relevant fields such as description, quantity, rate, amount, etc.
+- Do not omit any rows. The output must cover **all rows in the table**.
+- If the table spans multiple columns or pages, combine them properly into a single list.
+- Ensure every item is accurately represented and nothing is skipped.
+- Double-check and confirm that the table is complete before finishing.
+Output format:
+{
+  "Items": [
+    {
+      "Field1": "Value1",
+      "Field2": "Value2",
+      ...
+    },
+    ...
+  ]
+}
+"""
+},
     {"key": "Payment Terms", "question": """Identify the following Payment terms from the given image:
     Bank_details, consisting of: Bank_Name, IFSC_Code, Bank_account_no
     Payment Due Date,
